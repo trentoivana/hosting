@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulación Phishing — Capacitación Ciberseguridad</title>
+<title>Simulación Phishing — Capacitación Ciberseguridad Mabe</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #f5f5f3;
     --surface: #ffffff;
@@ -31,7 +30,6 @@
     --radius: 8px;
     --radius-lg: 12px;
   }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     background: var(--bg);
@@ -43,437 +41,138 @@
     padding: 2rem 1rem 4rem;
     line-height: 1.6;
   }
+  .container { width: 100%; max-width: 660px; }
 
-  .container {
-    width: 100%;
-    max-width: 660px;
-  }
-
-  /* Header */
-  .app-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .app-header .brand {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
-  }
-  .app-header h1 {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-  .app-header p {
-    font-size: 14px;
-    color: var(--text-secondary);
-  }
-
-  /* Progress */
-  .progress-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 1.5rem;
-  }
-  .prog-bar {
-    flex: 1;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .prog-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-  .prog-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  /* Mail client */
-  .mail-client {
-    background: var(--surface);
-    border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-
-  .mail-titlebar {
-    background: var(--surface-alt);
-    border-bottom: 0.5px solid var(--border);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-  .dot-r { background: #FF5F57; }
-  .dot-y { background: #FFBD2E; }
-  .dot-g { background: #28C840; }
-  .titlebar-text {
-    flex: 1;
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  /* Mail header */
-  .mail-header {
-    padding: 18px 20px 14px;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .mail-subject {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 14px;
-    line-height: 1.4;
-  }
-  .meta-row {
-    display: flex;
-    gap: 8px;
-    font-size: 13px;
-    margin-bottom: 5px;
-    align-items: flex-start;
-  }
-  .meta-label {
-    color: var(--text-muted);
-    min-width: 38px;
-    flex-shrink: 0;
-    padding-top: 1px;
-  }
-
-  /* Sender toggle */
-  .sender-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    color: var(--text-primary);
-    font-weight: 500;
-    position: relative;
-    border-radius: 4px;
-    padding: 1px 4px 1px 2px;
-    transition: background 0.15s;
-    user-select: none;
-  }
-  .sender-toggle:hover { background: var(--accent-light); color: var(--accent-text); }
-  .chevron {
-    width: 14px;
-    height: 14px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
-  .chevron.open { transform: rotate(180deg); }
-
-  /* Tooltip */
-  .sender-tooltip {
+  /* MATRIX OVERLAY */
+  #matrixOverlay {
     display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    background: var(--surface);
-    border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    z-index: 100;
-    min-width: 270px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
-  }
-  .sender-tooltip.open { display: block; }
-  .tooltip-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    overflow: hidden;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    flex-shrink: 0;
   }
-  .tooltip-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-  .tooltip-email {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 3px;
-    word-break: break-all;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-  }
-  .email-highlight {
-    background: var(--warning-light);
-    color: var(--warning);
-    padding: 1px 3px;
-    border-radius: 3px;
+  #matrixOverlay.active { display: flex; }
+  #matrixCanvas { position: absolute; inset: 0; }
+  .matrix-msg {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #ff2222;
+    font-family: 'Courier New', monospace;
+    font-size: 22px;
     font-weight: 700;
+    text-shadow: 0 0 12px #ff0000;
+    animation: blink 0.5s step-end infinite;
+    padding: 0 1rem;
+    line-height: 1.5;
   }
+  @keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.3;} }
 
-  /* Mail body */
-  .mail-body {
-    padding: 20px;
-    font-size: 14px;
-    color: var(--text-primary);
-    line-height: 1.75;
-    min-height: 140px;
-  }
+  /* HEADER */
+  .app-header { text-align: center; margin-bottom: 1.5rem; }
+  .app-header .brand { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .app-header h1 { font-size: 22px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+  .app-header p { font-size: 14px; color: var(--text-secondary); }
+
+  /* PROGRESS */
+  .progress-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+  .prog-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+  .prog-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+  /* MAIL CLIENT */
+  .mail-client { background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .mail-titlebar { background: var(--surface-alt); border-bottom: 0.5px solid var(--border); padding: 10px 16px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; } .dot-y { background: #FFBD2E; } .dot-g { background: #28C840; }
+  .titlebar-text { flex: 1; text-align: center; font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+  /* MAIL HEADER */
+  .mail-header { padding: 16px 20px 12px; border-bottom: 0.5px solid var(--border); }
+  .mail-subject { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; line-height: 1.4; }
+  .meta-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 5px; align-items: flex-start; }
+  .meta-label { color: var(--text-muted); min-width: 38px; flex-shrink: 0; padding-top: 1px; }
+  .sender-toggle { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text-primary); font-weight: 500; position: relative; border-radius: 4px; padding: 1px 4px 1px 2px; transition: background 0.15s; user-select: none; }
+  .sender-toggle:hover { background: var(--accent-light); color: var(--accent-text); }
+  .chevron { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; flex-shrink: 0; }
+  .chevron.open { transform: rotate(180deg); }
+  .sender-tooltip { display: none; position: absolute; top: calc(100% + 6px); left: 0; background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius); padding: 12px 14px; z-index: 100; min-width: 270px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); }
+  .sender-tooltip.open { display: block; }
+  .tooltip-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .tooltip-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .tooltip-email { font-size: 12px; color: var(--text-secondary); margin-top: 3px; word-break: break-all; font-family: 'SF Mono','Fira Code',monospace; }
+  .email-highlight { background: var(--warning-light); color: var(--warning); padding: 1px 3px; border-radius: 3px; font-weight: 700; }
+
+  /* MAIL BODY */
+  .mail-body { padding: 20px; font-size: 14px; color: var(--text-primary); line-height: 1.75; min-height: 140px; }
   .mail-body p { margin-bottom: 12px; }
   .mail-body p:last-child { margin-bottom: 0; }
-  .mail-link { color: #1a5ea8; text-decoration: underline; cursor: default; }
+  .mail-link { color: #1a5ea8; text-decoration: underline; cursor: pointer; }
+  .mail-link:hover { color: #c0392b; }
 
-  /* Attachment */
-  .mail-attachment {
-    margin: 0 20px 4px;
-    padding: 10px 14px;
-    background: var(--surface-alt);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
+  /* ATTACHMENT */
+  .mail-attachment { margin: 0 20px 4px; padding: 10px 14px; background: var(--surface-alt); border: 0.5px solid var(--border); border-radius: var(--radius); display: flex; align-items: center; gap: 10px; font-size: 13px; }
   .att-icon { color: var(--text-secondary); font-size: 18px; flex-shrink: 0; }
-  .att-name { color: var(--text-primary); font-weight: 500; }
+  .att-name { color: #1a5ea8; font-weight: 500; text-decoration: underline; cursor: pointer; }
+  .att-name:hover { color: #c0392b; }
   .att-size { color: var(--text-muted); margin-left: auto; }
 
-  /* Verdict buttons */
-  .verdict-zone {
-    padding: 16px 20px;
-    border-top: 0.5px solid var(--border);
-  }
-  .verdict-q {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: 10px;
-  }
+  /* VERDICT */
+  .verdict-zone { padding: 16px 20px; border-top: 0.5px solid var(--border); }
+  .verdict-q { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 10px; }
   .verdict-btns { display: flex; gap: 10px; }
-  .btn {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1.5px solid;
-    transition: opacity 0.15s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
+  .btn { flex: 1; padding: 10px 12px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid; transition: opacity 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn:hover { opacity: 0.82; }
   .btn:active { transform: scale(0.98); }
-  .btn-trust {
-    background: var(--success-light);
-    color: var(--success);
-    border-color: var(--success-border);
-  }
-  .btn-distrust {
-    background: var(--danger-light);
-    color: var(--danger);
-    border-color: var(--danger-border);
-  }
-  .btn-neutral {
-    background: var(--surface-alt);
-    color: var(--text-primary);
-    border-color: var(--border-strong);
-    width: 100%;
-    margin-top: 12px;
-  }
+  .btn-trust { background: var(--success-light); color: var(--success); border-color: var(--success-border); }
+  .btn-distrust { background: var(--danger-light); color: var(--danger); border-color: var(--danger-border); }
+  .btn-neutral { background: var(--surface-alt); color: var(--text-primary); border-color: var(--border-strong); width: 100%; margin-top: 12px; }
 
-  /* Consequence panel */
-  .consequence-panel {
-    display: none;
-    margin: 0 20px 16px;
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    border: 1.5px solid;
-  }
-  .consequence-panel.wrong {
-    background: var(--danger-light);
-    border-color: var(--danger-border);
-    color: var(--danger);
-  }
-  .consequence-panel.right {
-    background: var(--success-light);
-    border-color: var(--success-border);
-    color: var(--success);
-  }
+  /* CONSEQUENCE */
+  .consequence-panel { display: none; margin: 0 20px 16px; border-radius: var(--radius); padding: 14px 16px; font-size: 13px; line-height: 1.6; border: 1.5px solid; }
+  .consequence-panel.wrong { background: var(--danger-light); border-color: var(--danger-border); color: var(--danger); }
+  .consequence-panel.right { background: var(--success-light); border-color: var(--success-border); color: var(--success); }
   .consequence-panel.visible { display: block; }
-  .consequence-title {
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
+  .consequence-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 
-  /* Result / checklist panel */
-  .result-panel {
-    display: none;
-    padding: 16px 20px;
-    border-top: 0.5px solid var(--border);
-  }
+  /* RESULT / CHECKLIST */
+  .result-panel { display: none; padding: 16px 20px; border-top: 0.5px solid var(--border); }
   .result-panel.visible { display: block; }
-  .result-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
+  .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .result-icon { font-size: 20px; }
   .result-title { font-size: 15px; font-weight: 600; }
   .result-title.correct { color: var(--success); }
   .result-title.incorrect { color: var(--danger); }
-
-  .checklist-intro {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 10px;
-    font-style: italic;
-  }
+  .checklist-intro { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; font-style: italic; }
   .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .checklist li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    background: var(--surface-alt);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: background 0.15s;
-    user-select: none;
-  }
+  .checklist li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--surface-alt); border: 0.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: background 0.15s; user-select: none; }
   .checklist li:hover { background: #efefec; }
-  .checklist li.checked {
-    background: var(--accent-light);
-    border-color: rgba(27,112,117,0.25);
-  }
-  .check-box {
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid var(--border-strong);
-    border-radius: 4px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .checklist li.checked .check-box {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  .check-tick {
-    display: none;
-    width: 10px;
-    height: 10px;
-    stroke: white;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    fill: none;
-  }
+  .checklist li.checked { background: var(--accent-light); border-color: rgba(27,112,117,0.25); }
+  .check-box { width: 18px; height: 18px; border: 1.5px solid var(--border-strong); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: background 0.15s, border-color 0.15s; }
+  .checklist li.checked .check-box { background: var(--accent); border-color: var(--accent); }
+  .check-tick { display: none; width: 10px; height: 10px; stroke: white; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
   .checklist li.checked .check-tick { display: block; }
   .clue-text { font-size: 13px; color: var(--text-secondary); line-height: 1.55; flex: 1; }
   .clue-text b { color: var(--text-primary); }
-
-  .checklist-score {
-    margin-top: 10px;
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: right;
-  }
+  .checklist-score { margin-top: 10px; font-size: 12px; color: var(--text-muted); text-align: right; }
   .checklist-score span { font-weight: 600; color: var(--accent); }
 
-  /* Final screen */
-  .final-screen {
-    display: none;
-    background: var(--surface);
-    border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius-lg);
-    padding: 2.5rem 2rem;
-    text-align: center;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
+  /* FINAL */
+  .final-screen { display: none; background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
   .final-screen.visible { display: block; }
   .final-big { font-size: 52px; font-weight: 700; color: var(--text-primary); line-height: 1; }
   .final-sub { font-size: 14px; color: var(--text-secondary); margin: 6px 0 20px; }
-  .score-breakdown {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 1.5rem;
-  }
-  .score-pill {
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1.5px solid;
-  }
-  .score-pill.detect {
-    background: var(--success-light);
-    color: var(--success);
-    border-color: var(--success-border);
-  }
-  .score-pill.clues {
-    background: var(--accent-light);
-    color: var(--accent-text);
-    border-color: rgba(27,112,117,0.3);
-  }
-  .final-msg {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    max-width: 460px;
-    margin: 0 auto 1.5rem;
-  }
-  .btn-restart {
-    padding: 10px 28px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border-strong);
-    background: var(--surface-alt);
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .score-breakdown { display: flex; justify-content: center; gap: 20px; margin-bottom: 1.5rem; }
+  .score-pill { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1.5px solid; }
+  .score-pill.detect { background: var(--success-light); color: var(--success); border-color: var(--success-border); }
+  .score-pill.clues { background: var(--accent-light); color: var(--accent-text); border-color: rgba(27,112,117,0.3); }
+  .final-msg { font-size: 14px; color: var(--text-secondary); line-height: 1.7; max-width: 460px; margin: 0 auto 1.5rem; }
+  .btn-restart { padding: 10px 28px; border-radius: var(--radius); border: 1.5px solid var(--border-strong); background: var(--surface-alt); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .btn-restart:hover { background: var(--bg); }
-
-  svg.icon {
-    display: inline-block;
-    vertical-align: middle;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
 
   @media (max-width: 480px) {
     body { padding: 1rem 0.75rem 3rem; }
@@ -486,11 +185,17 @@
 </head>
 <body>
 
+<!-- MATRIX OVERLAY -->
+<div id="matrixOverlay">
+  <canvas id="matrixCanvas"></canvas>
+  <div class="matrix-msg">⚠ SU SISTEMA HA SIDO HACKEADO</div>
+</div>
+
 <div class="container">
   <header class="app-header">
-    <div class="brand">Capacitación Industrial · Drean/Mabe Argentina</div>
-    <h1>Detectá el phishing</h1>
-    <p>Tres correos reales de planta. ¿Cuáles son seguros y cuáles son ataques?</p>
+    <div class="brand">Capacitación Industrial · Mabe Argentina</div>
+    <h1>Detecte el phishing</h1>
+    <p>Tres correos de planta. ¿Cuáles son legítimos y cuáles son ataques?</p>
   </header>
 
   <div class="progress-wrap">
@@ -503,7 +208,7 @@
       <div class="dot dot-r"></div>
       <div class="dot dot-y"></div>
       <div class="dot dot-g"></div>
-      <div class="titlebar-text" id="titlebarText">Bandeja de entrada — Drean/Mabe Argentina</div>
+      <div class="titlebar-text" id="titlebarText">Bandeja de entrada — Mabe Argentina</div>
     </div>
     <div id="mailContent"></div>
   </div>
@@ -521,76 +226,115 @@
 </div>
 
 <script>
+// ── MATRIX EFFECT ─────────────────────────────────────────────────────────────
+function runMatrix(durationMs, onDone) {
+  const overlay = document.getElementById('matrixOverlay');
+  const canvas  = document.getElementById('matrixCanvas');
+  overlay.classList.add('active');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const cols = Math.floor(canvas.width / 16);
+  const drops = Array(cols).fill(1);
+  const chars = 'アイウエオカキクケコサシスセソABCDEF0123456789@#$%!?<>[]{}\\|/~^';
+  let frame;
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff41';
+    ctx.font = '14px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const ch = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
+      ctx.fillText(ch, i * 16, drops[i] * 16);
+      if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+    frame = requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(() => {
+    cancelAnimationFrame(frame);
+    overlay.classList.remove('active');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (onDone) onDone();
+  }, durationMs);
+}
+
+// ── EMAIL DATA ─────────────────────────────────────────────────────────────────
 const emails = [
   {
     subject: "⚠️ URGENTE: Su cuenta de correo será BLOQUEADA en 24 horas",
-    senderName: "Soporte IT Drean Mabe",
-    senderEmail: "soporte-it@dr3an-mab3.com.ar",
-    senderEmailHtml: 'soporte-it@<span class="email-highlight">dr3an-mab3</span>.com.ar',
-    to: "personal@dreanmabe.com.ar",
+    senderName: "Soporte IT Mabe",
+    senderEmail: "soporte-it@mab3-sistemas.com.ar",
+    senderEmailHtml: 'soporte-it@<span class="email-highlight">mab3-sistemas.com.ar</span>',
+    to: "personal@mabe.com.ar",
     time: "Hoy, 8:14",
     avatarInitials: "SI",
     avatarBg: "#888780",
     avatarColor: "#fff",
+    hasLink: true,
     body: `<p>Estimado usuario,</p>
 <p>Su cuenta de correo electrónico <strong>ha sido comprometida</strong> y será <strong>BLOQUEADA PERMANENTEMENTE</strong> en las próximas 24 horas si no verifica sus credenciales de inmediato.</p>
 <p>Haga clic en el siguiente enlace para verificar su cuenta y evitar la pérdida de todos sus correos y archivos:</p>
-<p><span class="mail-link">http://drean-mabe-verificacion.xyz/login-seguro</span></p>
+<p><span class="mail-link" onclick="triggerMatrix()">http://mabe-verificacion-segura.xyz/login</span></p>
 <p>Si no realiza la verificación, su acceso será revocado sin posibilidad de recuperación.</p>
 <p>Atentamente,<br>Soporte Técnico IT</p>`,
     isPhishing: true,
     correctAnswer: "distrust",
-    wrongConsequenceTitle: "💥 La empresa fue víctima de robo de credenciales",
-    wrongConsequence: "Al ingresar sus datos en el portal falso, las credenciales de 14 empleados quedaron expuestas. Los atacantes accedieron al sistema de gestión de producción durante 72 horas. Se extrajo información de recetas de fabricación y tolerancias de calidad confidenciales. El incidente requirió resetear contraseñas de toda la organización, desconectar sistemas durante 6 horas de producción, y contratar una auditoría de seguridad externa.",
-    rightConsequenceTitle: "✓ Evitaste un ataque de robo de credenciales masivo",
-    rightConsequence: "Al no hacer clic en el enlace, impediste que los atacantes obtuvieran acceso al sistema de gestión de producción. El equipo de IT fue alertado, bloqueó el dominio falso y capacitó al resto del personal. Se evitó la exposición de información confidencial de fabricación y horas de parada de planta.",
+    wrongConsequenceTitle: "💥 Robo de credenciales — la empresa fue atacada",
+    wrongConsequence: "Al ingresar sus datos en el portal falso, las credenciales de 14 empleados quedaron expuestas. Los atacantes accedieron al sistema de gestión de producción durante 72 horas y extrajeron información de recetas de fabricación y tolerancias de calidad confidenciales. El incidente requirió resetear contraseñas de toda la organización, desconectar sistemas durante 6 horas de producción y contratar una auditoría de seguridad externa.",
+    rightConsequenceTitle: "✓ Robo de credenciales evitado",
+    rightConsequence: "Al no ingresar datos en el portal falso, evitó que las credenciales de 14 empleados quedaran expuestas. Los atacantes iban a acceder al sistema de gestión de producción durante 72 horas y extraer información de recetas de fabricación y tolerancias de calidad confidenciales. El incidente iba a requerir resetear contraseñas de toda la organización, desconectar sistemas durante 6 horas de producción y contratar una auditoría de seguridad externa.",
     clues: [
-      { text: 'El dominio del remitente usa números en lugar de letras: <b>dr3an-mab3.com.ar</b>. Al hacer clic en el nombre del remitente, la dirección real queda expuesta.', spotted: false },
-      { text: 'El asunto usa <b>mayúsculas, emojis de alerta y urgencia extrema</b>. Esta presión psicológica busca que actúes sin analizar el correo.', spotted: false },
-      { text: 'El enlace <b>drean-mabe-verificacion.xyz</b> no pertenece al dominio oficial de la empresa. IT nunca pide credenciales por un portal externo.', spotted: false },
-      { text: 'El tono <b>amenazante e irreversible</b> ("sin posibilidad de recuperación") es una señal clásica de phishing por presión.', spotted: false }
+      { text: 'El dominio del remitente es <b>mab3-sistemas.com.ar</b> — usa el número 3 en lugar de la letra e. Al hacer clic en el nombre del remitente, la dirección real queda expuesta.', spotted: false },
+      { text: 'El asunto usa <b>mayúsculas, emojis de alerta y urgencia extrema</b>. Esta presión psicológica busca que se actúe sin analizar el correo.', spotted: false },
+      { text: 'El enlace <b>mabe-verificacion-segura.xyz</b> no pertenece al dominio oficial mabe.com.ar. IT nunca solicita credenciales por un portal externo.', spotted: false },
+      { text: 'El tono <b>amenazante e irreversible</b> ("sin posibilidad de recuperación") es una señal clásica de phishing por presión psicológica.', spotted: false }
     ]
   },
   {
     subject: "Actualización sistema MES — acción requerida antes del viernes",
-    senderName: "Sistemas — Drean Mabe IT",
-    senderEmail: "sistemas.it@dreanmabe-soporte.com",
-    senderEmailHtml: 'sistemas.it@<span class="email-highlight">dreanmabe-soporte.com</span>',
-    to: "personal.produccion@dreanmabe.com.ar",
+    senderName: "Sistemas — Mabe IT",
+    senderEmail: "sistemas.it@mabe-soporte.com",
+    senderEmailHtml: 'sistemas.it@<span class="email-highlight">mabe-soporte.com</span>',
+    to: "personal.produccion@mabe.com.ar",
     time: "Hoy, 7:52",
     avatarInitials: "IT",
     avatarBg: "#185FA5",
     avatarColor: "#fff",
+    hasLink: true,
     body: `<p>Estimados,</p>
 <p>Les informamos que el próximo viernes 18 de julio realizaremos una actualización del sistema MES. Para garantizar la continuidad del acceso, necesitamos que cada usuario confirme sus credenciales antes del jueves a las 18:00 hs.</p>
 <p>Por favor, ingrese al siguiente portal para confirmar su usuario y contraseña:</p>
-<p><span class="mail-link">http://portal-actualizacion-dreanmabe.net/mes-update</span></p>
+<p><span class="mail-link" onclick="triggerMatrix()">http://portal-actualizacion-mabe.net/mes-update</span></p>
 <p>Si tiene inconvenientes, puede responder este correo o comunicarse al interno 4421.</p>
-<p>Gracias,<br>Área de Sistemas — Drean Mabe Argentina</p>`,
+<p>Gracias,<br>Área de Sistemas — Mabe Argentina</p>`,
     attachment: { name: "Instructivo_actualizacion_MES_julio2026.pdf", size: "284 KB" },
     isPhishing: true,
     correctAnswer: "distrust",
-    wrongConsequenceTitle: "💥 Ransomware paralizó la línea de producción",
+    wrongConsequenceTitle: "💥 Ransomware — la línea de producción fue paralizada",
     wrongConsequence: "El archivo adjunto contenía malware. Al abrirlo, se instaló un ransomware que cifró los archivos de 23 computadoras en red, incluyendo los servidores del MES y el sistema de control de calidad. La línea de producción estuvo detenida durante 11 horas. Los atacantes exigieron el pago de U$D 85.000 en criptomonedas. La empresa debió restaurar desde backups de 48 horas previas, perdiendo datos de producción recientes.",
-    rightConsequenceTitle: "✓ Impediste la instalación de ransomware en la red de planta",
-    rightConsequence: "Al no abrir el adjunto ni ingresar al enlace, evitaste la instalación de un ransomware que habría cifrado los servidores del MES y detenido la línea de producción. El área de IT fue notificada, identificó la campaña maliciosa y emitió una alerta a toda la empresa. Se salvaron horas de producción y datos críticos del sistema.",
+    rightConsequenceTitle: "✓ Ataque de ransomware evitado",
+    rightConsequence: "Al no abrir el adjunto ni ingresar al enlace, evitó que un ransomware cifrara los archivos de 23 computadoras en red, incluyendo los servidores del MES y el sistema de control de calidad. La línea de producción iba a estar detenida durante 11 horas. Los atacantes iban a exigir el pago de U$D 85.000 en criptomonedas, y la empresa iba a tener que restaurar desde backups de 48 horas previas, perdiendo datos de producción recientes.",
     clues: [
-      { text: 'El dominio del remitente es <b>dreanmabe-soporte.com</b> — no es el dominio oficial de la empresa. El guión y la palabra "soporte" son indicios de dominio falso registrado para engañar.', spotted: false },
-      { text: 'El enlace <b>portal-actualizacion-dreanmabe.net</b> tampoco pertenece al dominio oficial. Los sistemas internos legítimos no se alojan en dominios ".net" externos.', spotted: false },
-      { text: 'IT <b>nunca pide que los usuarios ingresen su contraseña en un portal externo</b> para confirmar credenciales. Ese mecanismo no existe en ninguna actualización legítima de sistemas.', spotted: false },
-      { text: 'El <b>archivo adjunto de un remitente no verificado</b> es uno de los principales vectores de entrada de malware. Nunca abrir adjuntos de correos no solicitados.', spotted: false }
+      { text: 'El dominio del remitente es <b>mabe-soporte.com</b> — no es el dominio oficial mabe.com.ar. El sufijo "-soporte" y el dominio ".com" (en lugar de ".com.ar") son indicios de dominio falso.', spotted: false },
+      { text: 'El enlace <b>portal-actualizacion-mabe.net</b> tampoco pertenece al dominio oficial. Los sistemas internos legítimos nunca se alojan en dominios ".net" externos.', spotted: false },
+      { text: 'IT <b>nunca solicita ingresar la contraseña en un portal externo</b> para confirmar credenciales. Ese mecanismo no existe en ninguna actualización legítima de sistemas.', spotted: false },
+      { text: 'Los <b>archivos PDF adjuntos también pueden contener malware</b>: un PDF puede incluir código ejecutable, scripts o exploits que se activan al abrirlo, incluso sin que el archivo parezca sospechoso. Nunca abrir adjuntos de remitentes no verificados.', spotted: false }
     ]
   },
   {
     subject: "Transferencia urgente — proveedor nuevo (confidencial)",
     senderName: "Fernando Martínez",
-    senderEmail: "f.martinez@dreanmave.com.ar",
-    senderEmailHtml: 'f.martinez@<span class="email-highlight">dreanmave</span>.com.ar',
-    to: "administracion@dreanmabe.com.ar",
+    senderEmail: "fernando.martinez@mave.com.ar",
+    senderEmailHtml: 'fernando.martinez@<span class="email-highlight">mave</span>.com.ar',
+    to: "administracion@mabe.com.ar",
     time: "Hoy, 6:48",
     avatarInitials: "FM",
     avatarBg: "#3B6D11",
     avatarColor: "#fff",
+    hasLink: false,
     body: `<p>Hola,</p>
 <p>Necesito que procesen con urgencia una transferencia a un proveedor nuevo con el que cerramos un acuerdo esta semana. El pago debe realizarse hoy antes de las 12:00 para no perder las condiciones acordadas.</p>
 <p>Datos de la cuenta:<br>
@@ -601,32 +345,41 @@ Monto: $4.850.000</p>
 <p>Gracias,<br>Fernando</p>`,
     isPhishing: true,
     correctAnswer: "distrust",
-    wrongConsequenceTitle: "💥 La empresa perdió $4.850.000 por estafa del falso CEO",
-    wrongConsequence: "La transferencia fue procesada. El dinero fue depositado en una cuenta de los atacantes y retirado en criptomonedas en menos de 2 horas, haciendo imposible la recuperación. La empresa inició acciones legales, pero el origen del ataque se rastreó hasta un servidor en el exterior. El área contable debió explicar el incidente a la dirección regional del grupo Mabe. Esta modalidad —descripta como 'estafa del falso CEO'— es la más costosa en términos económicos de todos los ataques de ingeniería social.",
-    rightConsequenceTitle: "✓ Evitaste la pérdida de $4.850.000 por estafa del falso CEO",
-    rightConsequence: "Al verificar la dirección real del remitente y notar que era 'dreanmave' en lugar de 'dreanmabe', bloqueaste la transferencia y alertaste al área de IT. Fernando Martínez fue contactado por teléfono y confirmó no haber enviado ningún correo. Se rastreó el intento al grupo atacante y se reforzaron los protocolos de autorización de pagos.",
+    wrongConsequenceTitle: "💥 Estafa del falso CEO — pérdida de $4.850.000",
+    wrongConsequence: "La transferencia fue procesada. El dinero fue depositado en una cuenta de los atacantes y retirado en criptomonedas en menos de 2 horas, haciendo imposible la recuperación. La empresa inició acciones legales, pero el origen del ataque se rastreó hasta un servidor en el exterior. El área contable debió explicar el incidente a la dirección regional del grupo Mabe. Esta modalidad —denominada 'estafa del falso CEO'— es la más costosa en términos económicos de todos los ataques de ingeniería social.",
+    rightConsequenceTitle: "✓ Pérdida de $4.850.000 evitada",
+    rightConsequence: "Al detectar que el dominio era 'mave.com.ar' en lugar de 'mabe.com.ar', bloqueó la transferencia antes de procesarla. El dinero iba a ser depositado en una cuenta de los atacantes y retirado en criptomonedas en menos de 2 horas, haciendo imposible la recuperación. La empresa iba a tener que iniciar acciones legales sin resultado, y el área contable iba a tener que explicar la pérdida a la dirección regional del grupo Mabe.",
     clues: [
-      { text: 'La dirección del remitente dice <b>dreanmave.com.ar</b> en lugar de <b>dreanmabe.com.ar</b>. Una sola letra cambiada — casi imperceptible sin hacer clic para ver la dirección completa.', spotted: false },
+      { text: 'La dirección del remitente es <b>fernando.martinez@mave.com.ar</b> en lugar de <b>mabe.com.ar</b>. Una sola letra cambiada — casi imperceptible sin hacer clic para ver la dirección completa.', spotted: false },
       { text: 'El pedido de <b>confidencialidad</b> ("no lo mencionen en los canales habituales") está diseñado para aislar a la víctima e impedir que consulte con otros antes de actuar.', spotted: false },
-      { text: 'La <b>urgencia horaria</b> ("antes de las 12:00") y la excusa de "reuniones toda la mañana" presionan para actuar rápido y bloquean la posibilidad de verificación telefónica.', spotted: false },
-      { text: 'Ninguna transferencia de monto significativo a un <b>proveedor nuevo</b> debe procesarse sin verificación por un canal alternativo (llamada telefónica directa, no respuesta al mismo correo).', spotted: false }
+      { text: 'La <b>urgencia horaria</b> ("antes de las 12:00") y la excusa de "reuniones toda la mañana" presionan para actuar rápido e imposibilitan la verificación telefónica directa.', spotted: false },
+      { text: 'Ninguna transferencia de monto significativo a un <b>proveedor nuevo</b> debe procesarse sin verificación por un canal alternativo (llamada telefónica directa, presencialmente). Nunca verificar respondiendo al mismo correo.', spotted: false }
     ]
   }
 ];
 
+// ── STATE ──────────────────────────────────────────────────────────────────────
 let current = 0;
 let detectScore = 0;
-let totalClues = 0;
 let ticked = 0;
 let answered = false;
 let tooltipOpen = false;
+let matrixPending = false;
 
+// ── MATRIX TRIGGER ─────────────────────────────────────────────────────────────
+function triggerMatrix() {
+  if (answered) return;
+  runMatrix(5000, null);
+}
+
+// ── PROGRESS ───────────────────────────────────────────────────────────────────
 function updateProgress() {
   const pct = (current / emails.length) * 100;
   document.getElementById('progFill').style.width = pct + '%';
   document.getElementById('progLabel').textContent = 'Correo ' + (current + 1) + ' de ' + emails.length;
 }
 
+// ── RENDER ─────────────────────────────────────────────────────────────────────
 function render() {
   document.getElementById('finalScreen').classList.remove('visible');
   document.getElementById('mailClient').style.display = '';
@@ -641,12 +394,12 @@ function render() {
   if (e.attachment) {
     attachHtml = `<div class="mail-attachment">
       <span class="att-icon">📎</span>
-      <span class="att-name">${e.attachment.name}</span>
+      <span class="att-name" onclick="triggerMatrix()">${e.attachment.name}</span>
       <span class="att-size">${e.attachment.size}</span>
     </div>`;
   }
 
-  document.getElementById('titlebarText').textContent = 'Bandeja de entrada — Drean/Mabe Argentina';
+  document.getElementById('titlebarText').textContent = 'Bandeja de entrada — Mabe Argentina';
   document.getElementById('mailContent').innerHTML = `
     <div class="mail-header">
       <div class="mail-subject">${e.subject}</div>
@@ -678,14 +431,14 @@ function render() {
     <div class="mail-body">${e.body}</div>
     ${attachHtml}
     <div class="verdict-zone" id="verdictZone">
-      <div class="verdict-q">¿Cómo calificás este correo?</div>
+      <div class="verdict-q">¿Cómo califica este correo?</div>
       <div class="verdict-btns">
         <button class="btn btn-trust" onclick="answer('trust')">
-          <svg class="icon" width="16" height="16" viewBox="0 0 16 16"><path d="M8 14s-6-3.5-6-7.5A4 4 0 0 1 8 3a4 4 0 0 1 6 3.5C14 10.5 8 14 8 14z"/></svg>
+          <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 16 16"><path d="M8 14s-6-3.5-6-7.5A4 4 0 0 1 8 3a4 4 0 0 1 6 3.5C14 10.5 8 14 8 14z"/></svg>
           Es legítimo
         </button>
         <button class="btn btn-distrust" onclick="answer('distrust')">
-          <svg class="icon" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8"/><circle cx="8" cy="11" r="0.5" fill="currentColor"/></svg>
+          <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8"/><circle cx="8" cy="11" r="0.5" fill="currentColor"/></svg>
           Es phishing
         </button>
       </div>
@@ -700,13 +453,8 @@ function toggleTooltip(e) {
   tooltipOpen = !tooltipOpen;
   const t = document.getElementById('senderTooltip');
   const c = document.getElementById('chevronIcon');
-  if (tooltipOpen) {
-    t.classList.add('open');
-    c.classList.add('open');
-  } else {
-    t.classList.remove('open');
-    c.classList.remove('open');
-  }
+  tooltipOpen ? t.classList.add('open') : t.classList.remove('open');
+  tooltipOpen ? c.classList.add('open') : c.classList.remove('open');
 }
 
 document.addEventListener('click', function() {
@@ -719,6 +467,7 @@ document.addEventListener('click', function() {
   }
 });
 
+// ── ANSWER ─────────────────────────────────────────────────────────────────────
 function answer(choice) {
   if (answered) return;
   answered = true;
@@ -730,13 +479,8 @@ function answer(choice) {
   document.getElementById('verdictZone').style.display = 'none';
 
   const cp = document.getElementById('consequencePanel');
-  if (isCorrect) {
-    cp.className = 'consequence-panel right visible';
-    cp.innerHTML = `<div class="consequence-title">${e.rightConsequenceTitle}</div>${e.rightConsequence}`;
-  } else {
-    cp.className = 'consequence-panel wrong visible';
-    cp.innerHTML = `<div class="consequence-title">${e.wrongConsequenceTitle}</div>${e.wrongConsequence}`;
-  }
+  cp.className = 'consequence-panel ' + (isCorrect ? 'right' : 'wrong') + ' visible';
+  cp.innerHTML = `<div class="consequence-title">${isCorrect ? e.rightConsequenceTitle : e.wrongConsequenceTitle}</div>${isCorrect ? e.rightConsequence : e.wrongConsequence}`;
 
   const cluesHtml = e.clues.map((c, i) => `
     <li id="clue-${i}" onclick="toggleClue(${i})">
@@ -749,15 +493,19 @@ function answer(choice) {
     </li>
   `).join('');
 
+  const intro = isCorrect
+    ? 'Marque las señales de alerta que había notado <em>antes</em> de responder. Sea honesto: cada señal identificada suma puntos a su puntaje total.'
+    : 'Era phishing. Pasaste por alto varios detalles... Revisá las señales de alerta a continuación. Marcá si notaste alguna.';
+
   const rp = document.getElementById('resultPanel');
   rp.innerHTML = `
     <div class="result-header">
       <span class="result-icon">${isCorrect ? '✓' : '✗'}</span>
       <span class="result-title ${isCorrect ? 'correct' : 'incorrect'}">
-        ${isCorrect ? 'Correcto — era phishing.' : 'Era phishing. ¿Qué señales pasaste por alto?'}
+        ${isCorrect ? 'Correcto — era phishing.' : 'Incorrecto — era phishing.'}
       </span>
     </div>
-    <div class="checklist-intro">Marcá las señales de alerta que habías notado <em>antes</em> de responder. Sé honesto — suma puntos a tu puntaje total.</div>
+    <div class="checklist-intro">${intro}</div>
     <ul class="checklist" id="clueList">${cluesHtml}</ul>
     <div class="checklist-score">Señales identificadas: <span id="clueCount">0</span> / ${e.clues.length}</div>
     <button class="btn btn-neutral" onclick="next()">
@@ -765,15 +513,18 @@ function answer(choice) {
     </button>
   `;
   rp.classList.add('visible');
+
+  // Si se equivocó, lanzar matrix antes de mostrar el resultado
+  if (!isCorrect) {
+    runMatrix(5000, null);
+  }
 }
 
 function toggleClue(i) {
   const e = emails[current];
-  const li = document.getElementById('clue-' + i);
   const wasSpotted = e.clues[i].spotted;
   e.clues[i].spotted = !wasSpotted;
-  li.classList.toggle('checked');
-
+  document.getElementById('clue-' + i).classList.toggle('checked');
   const count = e.clues.filter(c => c.spotted).length;
   document.getElementById('clueCount').textContent = count;
   ticked += e.clues[i].spotted ? 1 : -1;
@@ -782,17 +533,15 @@ function toggleClue(i) {
 
 function next() {
   current++;
-  if (current >= emails.length) {
-    showFinal();
-  } else {
-    render();
-  }
+  if (current >= emails.length) showFinal();
+  else render();
 }
 
+// ── FINAL ──────────────────────────────────────────────────────────────────────
 function showFinal() {
   document.getElementById('mailClient').style.display = 'none';
-  document.getElementById('progFill').style.width = '100%';
-  document.getElementById('progLabel').textContent = 'Ejercicio completado';
+  const fs = document.getElementById('finalScreen');
+  fs.classList.add('visible');
 
   const totalPossibleClues = emails.reduce((s, e) => s + e.clues.length, 0);
   const totalPoints = detectScore * 3 + ticked;
@@ -805,24 +554,19 @@ function showFinal() {
   const pct = totalPoints / maxPoints;
   let msg = '';
   if (pct === 1) {
-    msg = '¡Resultado perfecto! Detectaste todos los correos Y notaste todas las señales de alerta. Tu nivel de conciencia en ciberseguridad es muy alto. Recordá que los atacantes evolucionan constantemente — mantener este hábito de verificación es clave.';
+    msg = '¡Resultado perfecto! Detectó todos los correos y notó todas las señales de alerta. Su nivel de conciencia en ciberseguridad es muy alto. Recuerde que los atacantes evolucionan constantemente: mantener el hábito de verificación es clave.';
   } else if (pct >= 0.7) {
-    msg = 'Buen resultado. Detectaste la mayoría de los ataques, pero algunas señales pasaron desapercibidas. Revisá las claves que no marcaste — son exactamente los puntos que los atacantes más sofisticados van a explotar.';
+    msg = 'Buen resultado. Detectó la mayoría de los ataques, pero algunas señales pasaron desapercibidas. Revise las claves que no marcó: son exactamente los puntos que los atacantes más sofisticados van a explotar.';
   } else if (pct >= 0.4) {
-    msg = 'Resultado intermedio. Los ataques de nivel medio y el "falso CEO" engañan a muchos profesionales. La regla más importante: ante cualquier pedido inusual de dinero o credenciales, siempre verificar por teléfono antes de actuar.';
+    msg = 'Resultado intermedio. Los ataques de nivel medio y el "falso CEO" engañan a muchos profesionales. La regla más importante: ante cualquier pedido inusual de dinero o credenciales, verifique siempre por teléfono antes de actuar.';
   } else {
-    msg = 'Hay margen para mejorar — y esta capacitación existe exactamente para eso. Recordá: entre el 80 y el 90% de los ataques informáticos comienzan por un error humano. Revisá las señales de alerta de cada correo y prestá especial atención a la dirección real del remitente.';
+    msg = 'Hay margen para mejorar — y esta capacitación existe exactamente para eso. Recuerde: entre el 80 y el 90% de los ataques informáticos comienzan por un error humano. Revise las señales de alerta de cada correo y preste especial atención a la dirección real del remitente.';
   }
-
   document.getElementById('finalMsg').textContent = msg;
-  document.getElementById('finalScreen').classList.add('visible');
 }
 
 function restart() {
-  current = 0;
-  detectScore = 0;
-  ticked = 0;
-  answered = false;
+  current = 0; detectScore = 0; ticked = 0; answered = false;
   emails.forEach(e => e.clues.forEach(c => { c.spotted = false; }));
   document.getElementById('finalScreen').classList.remove('visible');
   document.getElementById('mailClient').style.display = '';
