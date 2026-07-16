@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Monitoreo Integral de Datos y Mantenimiento Predictivo PLUS — Mabe</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f2f4f6;
+  --surface:#ffffff;
+  --surface2:#f7f8fa;
+  --surface3:#eef0f3;
+  --border:#dde1e7;
+  --border-strong:#c8cdd6;
+  --teal:#1b7075;
+  --teal-light:#22909a;
+  --teal-bg:#e8f4f5;
+  --amber:#c97000;
+  --amber-light:#e08000;
+  --amber-bg:#fff4e0;
+  --amber-border:#f0c070;
+  --danger:#b02020;
+  --danger-light:#cc2a2a;
+  --danger-bg:#fdeaea;
+  --danger-border:#f0aaaa;
+  --ok:#1a6e35;
+  --ok-bg:#eaf6ee;
+  --ok-border:#7ecb96;
+  --warn-val:#e06500;
+  --warn-bg:#fffaed;
+  --warn-border:#f5c842;
+  --err-val:#b02020;
+  --err-bg:#fdeaea;
+  --err-border:#f0aaaa;
+  --card-ok-bg:#f2fbf5;
+  --card-warn-bg:#fffbf0;
+  --card-pause-bg:#fef0f0;
+  --card-run-bg:#f2fbf5;
+  --text:#1a1f27;
+  --text2:#4a5568;
+  --text3:#8a97a8;
+  --text4:#b0bcc8;
+  --mono:'SF Mono','Fira Code','Consolas',monospace;
+  --radius:8px;
+  --shadow:0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md:0 2px 10px rgba(0,0,0,0.10);
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;padding:0 0 3rem;
+}
+
+/* HEADER */
+.app-header{
+  background:var(--teal);
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.brand-tag{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.65);}
+.app-title{font-size:15px;font-weight:700;color:#fff;margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#6ee7b7;box-shadow:0 0 6px #6ee7b7;animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.live-label{font-size:11px;color:rgba(255,255,255,0.75);font-weight:600;}
+.clock{font-family:var(--mono);font-size:13px;color:#a7f3e0;font-weight:700;}
+
+/* CONFIG BAR */
+.config-bar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  box-shadow:var(--shadow);
+}
+.config-section{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.config-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);flex-shrink:0;}
+.config-divider{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+
+.pause-group{
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:6px 12px;
+}
+.pause-group label{font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap;}
+.pause-group input[type=time]{
+  background:transparent;border:none;
+  color:var(--teal);font-family:var(--mono);font-size:14px;font-weight:700;
+  width:70px;outline:none;text-align:center;
+}
+.btn-fijar{
+  padding:6px 16px;background:var(--teal);color:#fff;
+  border:none;border-radius:6px;font-size:13px;font-weight:700;
+  cursor:pointer;transition:background 0.15s;white-space:nowrap;
+  display:none;
+}
+.btn-fijar.visible{display:inline-block;}
+.btn-fijar:hover{background:var(--teal-light);}
+
+.pause-fixed-label{
+  font-size:13px;color:var(--text2);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:6px 14px;
+  display:none;cursor:pointer;
+}
+.pause-fixed-label.visible{display:flex;align-items:center;gap:6px;}
+.pause-fixed-label .edit-hint{font-size:11px;color:var(--text3);}
+
+.pause-badge{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid;white-space:nowrap;}
+.pause-badge.active{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);}
+.pause-badge.inactive{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border);}
+
+.shift-badge{
+  font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;
+  background:var(--teal-bg);border:1px solid rgba(27,112,117,0.25);color:var(--teal);white-space:nowrap;
+}
+
+/* INSTRUCTIONS */
+.instructions{
+  background:var(--teal-bg);border:1px solid rgba(27,112,117,0.2);
+  border-radius:var(--radius);margin:12px 20px;padding:12px 16px;
+  font-size:14px;color:var(--text2);line-height:1.65;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* MAIN LAYOUT */
+.main-wrap{
+  display:grid;grid-template-columns:1fr 360px;
+  gap:14px;padding:0 20px;align-items:start;
+}
+@media(max-width:860px){.main-wrap{grid-template-columns:1fr;}}
+
+/* LINE PANEL */
+.line-panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;box-shadow:var(--shadow);
+}
+.line-header{
+  padding:9px 14px;background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.line-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:0.06em;}
+.line-status{font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;border:1px solid;}
+.line-status.running{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border);}
+.line-status.paused{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);}
+
+.pause-banner{
+  display:none;margin:8px 10px 2px;padding:8px 14px;
+  background:var(--amber-bg);border:1px solid var(--amber-border);
+  border-radius:6px;font-size:13px;color:var(--amber);font-weight:600;text-align:center;
+}
+.pause-banner.visible{display:block;}
+
+.sensors-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;padding:12px;
+}
+
+/* SENSOR CARD */
+.sensor-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:9px 9px 7px;
+  cursor:pointer;transition:border-color 0.18s,background 0.18s,box-shadow 0.18s;
+  user-select:none;position:relative;
+  display:flex;flex-direction:column;
+  box-shadow:var(--shadow);
+}
+.sensor-card:hover{border-color:var(--teal);box-shadow:var(--shadow-md);}
+.sensor-card.selected{
+  border-color:var(--teal);background:var(--teal-bg);
+  box-shadow:0 0 0 2px rgba(27,112,117,0.15),var(--shadow-md);
+}
+.sensor-card.selected::after{
+  content:'✓';position:absolute;top:5px;right:7px;
+  font-size:10px;color:var(--teal);font-weight:700;
+}
+.sensor-card.pause-card{border-color:var(--ok-border);}
+.sensor-card.pause-card.paused-active{background:var(--card-pause-bg);border-color:var(--danger-border);}
+.sensor-card.pause-card.running-active{background:var(--card-run-bg);border-color:var(--ok-border);}
+.sensor-card.pause-card:hover{border-color:var(--teal);}
+.sensor-card.pause-card.selected{border-color:var(--teal);box-shadow:0 0 0 2px rgba(27,112,117,0.15);}
+.sensor-card.pause-card.selected::after{color:var(--teal);}
+.sensor-card.card-state-ok{background:var(--card-ok-bg);}
+.sensor-card.card-state-warn{background:var(--card-warn-bg);}
+.sensor-card.card-state-err{background:var(--err-bg);}
+
+.s-top{display:flex;align-items:flex-start;gap:5px;margin-bottom:4px;}
+.s-icon{font-size:16px;flex-shrink:0;line-height:1.2;}
+.s-label{font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;line-height:1.3;flex:1;}
+
+/* Value states: ok / warn / err */
+.s-value{
+  font-family:var(--mono);font-size:22px;font-weight:700;
+  color:var(--ok);line-height:1;margin:3px 0 1px;
+  transition:color 0.3s;
+}
+.s-value.val-ok{color:var(--ok);}
+.s-value.val-warn{color:var(--warn-val);}
+.s-value.val-err{color:var(--err-val);}
+.s-value.val-neutral{color:var(--text2);}
+.s-value.val-pause{color:var(--amber);}
+
+.s-unit{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
+.s-trend{font-size:11px;margin-bottom:4px;}
+.trend-up{color:var(--err-val);}.trend-dn{color:#2563eb;}.trend-st{color:var(--text4);}
+
+/* State chip below value */
+.s-state-chip{
+  display:inline-block;font-size:11px;font-weight:700;
+  padding:2px 9px;border-radius:20px;margin-bottom:5px;
+  border:1px solid;
+}
+.chip-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border);}
+.chip-warn{background:var(--warn-bg);color:var(--warn-val);border-color:var(--warn-border);}
+.chip-err{background:var(--err-bg);color:var(--err-val);border-color:var(--err-border);}
+.chip-neutral{background:var(--surface2);color:var(--text3);border-color:var(--border);}
+
+/* Reference bar */
+.s-ref{
+  margin-top:auto;padding-top:6px;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:3px;
+}
+.s-ref-row{display:flex;justify-content:space-between;align-items:center;gap:4px;}
+.s-ref-label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;}
+.s-ref-val{font-family:var(--mono);font-size:11px;color:var(--text3);white-space:nowrap;}
+.s-ref-val.ref-consigna{color:var(--teal);}
+.s-ref-val.ref-alarm{color:var(--danger);}
+
+/* OEE card */
+.sensor-card.oee-card{border-color:rgba(27,112,117,0.3);}
+.oee-components{display:flex;flex-direction:column;gap:3px;margin-bottom:2px;}
+.oee-row{display:flex;justify-content:space-between;align-items:center;}
+.oee-lbl{font-size:10px;color:var(--text3);font-weight:600;}
+.oee-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.pieces-turns{display:flex;gap:5px;margin:4px 0 5px;}
+.turn-block{
+  flex:1;background:var(--surface2);border:1px solid var(--border);
+  border-radius:4px;padding:5px 6px;text-align:center;
+}
+.turn-block.active-turn{background:var(--teal-bg);border-color:rgba(27,112,117,0.3);}
+.turn-label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.turn-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text2);line-height:1.2;}
+.turn-val.active-val{color:var(--teal);}
+
+/* ANALYSIS PANEL */
+.analysis-panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;position:sticky;top:14px;
+  box-shadow:var(--shadow-md);
+}
+.analysis-header{
+  padding:10px 14px;background:var(--teal);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.analysis-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;}
+.sel-counter{font-size:13px;color:rgba(255,255,255,0.75);}
+.sel-counter b{color:#fff;}
+
+.selected-tags{
+  padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px;
+  min-height:46px;border-bottom:1px solid var(--border);align-items:center;
+  background:var(--surface2);
+}
+.tag{
+  padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;
+  background:var(--teal-bg);border:1px solid rgba(27,112,117,0.3);color:var(--teal);
+}
+.tag.pause-tag{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber);}
+.tag-empty{font-size:13px;color:var(--text3);}
+
+.btn-analyze{
+  display:block;width:calc(100% - 28px);margin:10px 14px;
+  padding:12px;background:var(--teal);color:#fff;border:none;
+  border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;
+  letter-spacing:0.02em;transition:background 0.15s,transform 0.1s;
+}
+.btn-analyze:hover{background:var(--teal-light);}
+.btn-analyze:active{transform:scale(0.99);}
+.btn-analyze:disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;}
+
+/* Processing */
+.processing{display:none;padding:18px 14px;text-align:center;}
+.processing.visible{display:block;}
+.proc-bars{display:flex;gap:3px;justify-content:center;margin-bottom:10px;}
+.proc-bar{width:3px;border-radius:2px;background:var(--teal);animation:barA 0.8s ease-in-out infinite;}
+.proc-bar:nth-child(1){height:14px;animation-delay:0s;}
+.proc-bar:nth-child(2){height:24px;animation-delay:0.1s;}
+.proc-bar:nth-child(3){height:18px;animation-delay:0.2s;}
+.proc-bar:nth-child(4){height:28px;animation-delay:0.3s;}
+.proc-bar:nth-child(5){height:16px;animation-delay:0.4s;}
+.proc-bar:nth-child(6){height:22px;animation-delay:0.5s;}
+@keyframes barA{0%,100%{opacity:0.25;transform:scaleY(0.6);}50%{opacity:1;transform:scaleY(1);}}
+.proc-text{font-size:14px;color:var(--text2);}
+.proc-steps{margin-top:7px;font-size:12px;color:var(--text3);font-family:var(--mono);}
+
+/* Alert result */
+.alert-result{display:none;padding:12px 14px 14px;}
+.alert-result.visible{display:block;}
+
+.alert-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:1.5px solid;}
+.alert-box.critical{background:var(--danger-bg);border-color:var(--danger-border);}
+.alert-box.warning{background:var(--amber-bg);border-color:var(--amber-border);}
+.alert-box.info{background:var(--teal-bg);border-color:rgba(27,112,117,0.25);}
+.alert-box.none{background:var(--surface2);border-color:var(--border);}
+
+.alert-level{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.alert-box.critical .alert-level{color:var(--danger);}
+.alert-box.warning .alert-level{color:var(--amber);}
+.alert-box.info .alert-level{color:var(--teal);}
+.alert-box.none .alert-level{color:var(--text3);}
+
+.alert-title{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.35;color:var(--text);}
+.alert-desc{font-size:13px;color:var(--text2);line-height:1.75;white-space:pre-line;}
+
+.corr-detail{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;
+}
+.corr-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px;}
+.corr-rows{display:flex;flex-direction:column;gap:7px;}
+.corr-row{display:flex;align-items:center;gap:8px;font-size:13px;}
+.corr-sensor{color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.corr-bar-wrap{width:70px;height:6px;background:var(--border);border-radius:3px;flex-shrink:0;}
+.corr-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease;width:0%;}
+.corr-val{font-family:var(--mono);font-size:12px;color:var(--text2);min-width:48px;text-align:right;}
+
+.learning-box{
+  background:var(--teal-bg);border:1px solid rgba(27,112,117,0.2);
+  border-radius:var(--radius);padding:12px 14px;
+}
+.learning-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--teal);margin-bottom:6px;}
+.learning-text{font-size:13px;color:var(--text2);line-height:1.75;}
+
+.btn-reset{
+  display:block;width:100%;margin-top:10px;padding:10px;
+  background:var(--surface2);color:var(--text2);
+  border:1px solid var(--border-strong);border-radius:var(--radius);
+  font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;
+}
+.btn-reset:hover{background:var(--surface3);}
+
+/* Status bar */
+.status-bar{
+  display:flex;gap:16px;padding:10px 20px;
+  font-size:12px;color:var(--text3);
+  border-top:1px solid var(--border);margin-top:14px;
+  background:var(--surface);flex-wrap:wrap;
+}
+.s-item{display:flex;align-items:center;gap:5px;}
+.s-dot{width:6px;height:6px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div>
+    <div class="brand-tag">Capacitación Industrial · Mabe Argentina</div>
+    <div class="app-title">Sistema de Monitoreo Integral de Datos y Mantenimiento Predictivo PLUS — Panel de Planta San Luis</div>
+  </div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <div class="live-label">EN VIVO</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<!-- CONFIG BAR -->
+<div class="config-bar">
+  <div class="config-section">
+    <div class="config-label">Turno activo</div>
+    <div class="shift-badge" id="shiftBadge">—</div>
+  </div>
+  <div class="config-divider"></div>
+  <div class="config-section" id="pauseConfigSection">
+    <div class="config-label">Pausa — Línea 1</div>
+
+    <div id="pauseEditArea" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <div class="pause-group">
+        <label>Turno 1:</label>
+        <input type="time" id="pauseT1" value="10:00" oninput="onPauseInput()">
+      </div>
+      <div class="pause-group">
+        <label>Turno 2:</label>
+        <input type="time" id="pauseT2" value="17:00" oninput="onPauseInput()">
+      </div>
+      <button class="btn-fijar" id="btnFijar" onclick="fijarPausa()">Fijar pausa</button>
+    </div>
+
+    <div class="pause-fixed-label" id="pauseFixedLabel" onclick="editarPausa()">
+      <span id="pauseFixedText">—</span>
+      <span class="edit-hint">(modificar)</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions">
+  <div style="flex-shrink:0;margin-top:1px;color:var(--teal);font-weight:700;">i</div>
+  <div>
+    <strong>Objetivo:</strong> Seleccione 2 sensores de la Línea 1 y presione <em>Analizar correlación</em>. El motor de correlación identificará patrones de riesgo presentes en los datos. Cada tarjeta muestra el valor en tiempo real junto con el promedio histórico y la consigna de referencia cuando corresponde.
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div>
+    <div class="line-panel">
+      <div class="line-header">
+        <div class="line-name">LÍNEA 1</div>
+        <div class="line-status running" id="lineStatus">EN MARCHA</div>
+      </div>
+      <div class="pause-banner" id="pauseBanner">Pausa activa — operarios en refrigerio. Las cintas transportadoras y el consumo eléctrico continúan en operación.</div>
+      <div class="sensors-grid" id="sensorsGrid"></div>
+    </div>
+  </div>
+
+  <div class="analysis-panel">
+    <div class="analysis-header">
+      <div class="analysis-title">Motor de correlación</div>
+      <div class="sel-counter">Seleccionados: <b id="selCount">0</b> / 2</div>
+    </div>
+    <div class="selected-tags" id="selectedTags">
+      <span class="tag-empty">Ningún sensor seleccionado.</span>
+    </div>
+    <button class="btn-analyze" id="btnAnalyze" disabled onclick="startAnalysis()">Analizar correlación</button>
+    <div class="processing" id="processingPanel">
+      <div class="proc-bars">
+        <div class="proc-bar"></div><div class="proc-bar"></div>
+        <div class="proc-bar"></div><div class="proc-bar"></div>
+        <div class="proc-bar"></div><div class="proc-bar"></div>
+      </div>
+      <div class="proc-text">Correlacionando series temporales...</div>
+      <div class="proc-steps" id="procSteps"></div>
+    </div>
+    <div class="alert-result" id="alertResult"></div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="s-item"><div class="s-dot" style="background:var(--ok);"></div> Variables activas: 10</div>
+  <div class="s-item"><div class="s-dot" style="background:var(--teal);"></div> Frecuencia de muestreo: 2 s</div>
+  <div class="s-item"><div class="s-dot" style="background:var(--amber);"></div> Próxima pausa: <strong id="nextPauseLabel">--</strong></div>
+</div>
+
+<script>
+// ─── SENSOR DEFINITIONS ───────────────────────────────────────────────────────
+// warnPct: % sobre base que activa advertencia (naranja)
+// errPct:  % sobre base que activa error (rojo)
+// electricalOnly: permanece en base durante la pausa
+// pauseSensor / piecesSensor: tipos especiales
+const SENSORS = [
+  { id:'temp_comp',   icon:'🌡️', label:'Temp. compresor',         unit:'°C',     base:72,  range:8,   decim:1, warnPct:8,  errPct:14, electricalOnly:false, pauseVal:50,  avgHist:70.5, consigna:null, alarmHigh:82  },
+  { id:'vibr_mot',    icon:'📳', label:'Vibración motor',          unit:'mm/s',   base:3.2, range:1.2, decim:2, warnPct:20, errPct:40, electricalOnly:false, pauseVal:0.9, avgHist:3.0,  consigna:null, alarmHigh:5.5 },
+  { id:'consumo',     icon:'⚡', label:'Consumo eléctrico',        unit:'kW',     base:48,  range:5,   decim:1, warnPct:8,  errPct:18, electricalOnly:true,  pauseVal:48,  avgHist:47.2, consigna:null, alarmHigh:null},
+  { id:'rechazos',    icon:'❌', label:'Rechazos calidad',         unit:'pzas/h', base:4,   range:3,   decim:0, warnPct:60, errPct:120,electricalOnly:false, pauseVal:0,   avgHist:3.8,  consigna:0,    alarmHigh:10  },
+  { id:'velocidad',   icon:'🔄', label:'Producción',               unit:'pzas/h', base:65,  range:8,   decim:0, warnPct:10, errPct:20, electricalOnly:true,  pauseVal:65,  avgHist:63,   consigna:65,   alarmHigh:null},
+  { id:'aire_comp',   icon:'💨', label:'Presión aire comprimido',  unit:'bar',    base:6.8, range:0.5, decim:1, warnPct:5,  errPct:10, electricalOnly:false, pauseVal:6.8, avgHist:6.75, consigna:6.8,  alarmHigh:null},
+  { id:'temp_prensa', icon:'🔥', label:'Temp. prensa termoform.',  unit:'°C',     base:185, range:14,  decim:1, warnPct:4,  errPct:8,  electricalOnly:false, pauseVal:65,  avgHist:183,  consigna:185,  alarmHigh:195 },
+  { id:'pausa',       icon:'⏸️', label:'Estado de pausa',          unit:'',       base:0,   range:0,   decim:0, warnPct:null,errPct:null,pauseSensor:true,   pauseVal:1,   avgHist:null, consigna:null, alarmHigh:null},
+  { id:'piezas',      icon:'📦', label:'Piezas producidas turno',  unit:'pzas',   base:0,   range:0,   decim:0, warnPct:null,errPct:null,piecesSensor:true,  pauseVal:0,   avgHist:null, consigna:455,  alarmHigh:null},
+];
+
+// ─── ALERTS ───────────────────────────────────────────────────────────────────
+const ALERTS = [
+  {
+    sensors:['temp_comp','vibr_mot'],
+    level:'critical', levelLabel:'ALERTA CRITICA',
+    title:'Riesgo de falla mecánica — rodamiento del compresor',
+    desc:'La correlación entre la temperatura elevada del compresor y la vibración anómala del motor indica desgaste progresivo del rodamiento. El patrón ha sido detectado en los últimos 3 turnos. Probabilidad de falla estimada: 78% en las próximas 72 horas.\n\nSe recomienda programar el reemplazo del rodamiento en la próxima ventana de mantenimiento planificado, antes de que se produzca una parada no programada.',
+    correlations:[{name:'Temp. compresor',value:0.91,color:'#c0392b'},{name:'Vibración motor',value:0.87,color:'#c0392b'}],
+    learning:'Este es el caso más frecuente de mantenimiento predictivo: dos variables que individualmente parecen dentro de rango, pero cuya tendencia conjunta revela desgaste progresivo. Sin correlación de datos, el rodamiento fallaría sin aviso previo.'
+  },
+  {
+    sensors:['consumo','velocidad'],
+    level:'warning', levelLabel:'ADVERTENCIA — EFICIENCIA ENERGETICA',
+    title:'Eficiencia energética fuera de rango histórico',
+    desc:'El consumo eléctrico no disminuye en proporción cuando la velocidad de línea decrece. El ratio kW/pieza se encuentra un 23% por encima del promedio histórico.\n\nPosibles causas: fricción mecánica, compresor operando en carga parcial ineficiente, o variador de frecuencia con desvío de calibración.',
+    correlations:[{name:'Consumo eléctrico',value:0.76,color:'#c97000'},{name:'Producción (pzas/h)',value:0.71,color:'#c97000'}],
+    learning:'Correlacionar consumo con velocidad permite calcular la eficiencia energética real en tiempo real. El indicador kW/pieza es invisible si se analiza cada variable por separado. Este análisis habitualmente solo se realiza al cierre del período.'
+  },
+  {
+    sensors:['temp_prensa','rechazos'],
+    level:'warning', levelLabel:'ADVERTENCIA — CALIDAD',
+    title:'Correlación temperatura-rechazos en prensa de termoformado',
+    desc:'Cuando la temperatura de la prensa supera los 193 °C, los rechazos de calidad aumentan un 340% en la hora siguiente. Coeficiente de correlación r = 0.89.\n\nSe recomienda revisar el valor de consigna del control de temperatura y el tiempo de enfriamiento entre ciclos.',
+    correlations:[{name:'Temp. prensa termoform.',value:0.89,color:'#b86a00'},{name:'Rechazos calidad',value:0.85,color:'#b86a00'}],
+    learning:'Esta correlación habría requerido meses de análisis manual para ser identificada. El sistema la detectó en 3 turnos de datos. Este tipo de hallazgo es uno de los que mayor impacto tiene en la reducción de desperdicios de producción.'
+  },
+  {
+    sensors:['aire_comp','vibr_mot'],
+    level:'critical', levelLabel:'ALERTA CRITICA',
+    title:'Riesgo de falla en circuito de aire comprimido',
+    desc:'La caída progresiva de presión en el circuito de aire comprimido coincide con el aumento de vibración en el motor compresor. Posible origen: fuga en circuito secundario o válvula reguladora con desgaste.\n\nPérdida de eficiencia estimada: 15%. Riesgo de parada de línea si la presión desciende por debajo de 5.8 bar.',
+    correlations:[{name:'Presión aire comprimido',value:0.83,color:'#c0392b'},{name:'Vibración motor',value:0.79,color:'#c0392b'}],
+    learning:'El circuito de aire comprimido es un servicio transversal a múltiples procesos. Una fuga incipiente no activa alarmas individuales, pero el patrón conjunto de vibración y presión permite detectarla antes de que se vuelva crítica.'
+  },
+  {
+    sensors:['temp_comp','consumo'],
+    level:'info', levelLabel:'ANALISIS — ANOMALIA TERMICA',
+    title:'Correlación entre temperatura del compresor y consumo eléctrico',
+    desc:'El consumo eléctrico aumenta en correlación con la temperatura del compresor. El sistema trabaja un 18% por encima de lo habitual en los períodos de mayor temperatura, incrementando el gasto energético de forma proporcional.\n\nSe recomienda revisar el aislamiento térmico de la sala de compresores. Para profundizar el análisis, sería conveniente incorporar también la temperatura ambiente de planta como variable adicional: su correlación con las otras dos permitiría determinar si el origen del problema es externo (clima) o interno (estado del equipo).',
+    correlations:[{name:'Temp. compresor',value:0.84,color:'#1b7075'},{name:'Consumo eléctrico',value:0.76,color:'#22909a'}],
+    learning:'Este análisis ilustra cómo la correlación entre dos variables puede señalar un problema que ninguna revela por separado. Además, abre una pregunta técnica concreta: ¿qué variable adicional agregaría más información? Incorporar la temperatura ambiente al análisis permitiría distinguir si el compresor consume más por condiciones externas o por desgaste interno.'
+  },
+  {
+    sensors:['pausa','consumo'],
+    level:'warning', levelLabel:'ADVERTENCIA — DESPERDICIO ENERGETICO',
+    title:'Consumo eléctrico sostenido durante la pausa programada',
+    desc:'Durante los períodos de pausa (10 minutos), el consumo eléctrico se mantiene en niveles equivalentes a los de producción normal (aprox. 48 kW). Las cintas transportadoras continúan operando sin carga útil.\n\nEstimación de desperdicio: 8 kWh por pausa × 1 pausa por turno × 2 turnos × 250 días = 4.000 kWh por año.\n\nEsta anomalía representa una oportunidad concreta de ahorro energético sin inversión en equipamiento: bastaría con establecer un procedimiento operativo de reducción de velocidad durante el refrigerio.',
+    correlations:[{name:'Estado de pausa',value:0.94,color:'#b86a00'},{name:'Consumo eléctrico',value:0.91,color:'#b86a00'}],
+    learning:'Este es un ejemplo de correlación entre una variable de proceso (consumo eléctrico) y una variable de gestión (estado de pausa). El sistema detecta que una magnitud que debería disminuir no lo hace. Este tipo de hallazgo es imposible de identificar sin cruzar fuentes de datos heterogéneas en tiempo real.'
+  },
+  {
+    sensors:['pausa','velocidad'],
+    level:'info', levelLabel:'ANALISIS — OPERACION EN VACIO',
+    title:'Cintas transportadoras activas sin producción durante la pausa',
+    desc:'La velocidad de línea se mantiene en valores normales (aprox. 320 pzas/h) durante los períodos de pausa, confirmando que las cintas transportadoras no se detienen junto con los operarios.\n\nSi bien esto puede obedecer a requisitos técnicos del proceso, se recomienda evaluar la viabilidad de reducir la velocidad durante el refrigerio.',
+    correlations:[{name:'Estado de pausa',value:0.88,color:'#1b7075'},{name:'Producción (pzas/h)',value:0.85,color:'#1b7075'}],
+    learning:'Detectar que la velocidad de línea no disminuye durante la pausa permite plantear una pregunta técnica concreta: ¿es necesario que así sea? Con frecuencia los procesos operan de determinada manera simplemente por inercia. El dato habilita una conversación que de otro modo no ocurriría.'
+  },
+  {
+    sensors:['oee','rechazos'],
+    level:'warning', levelLabel:'ADVERTENCIA — CALIDAD IMPACTANDO OEE',
+    title:'Los rechazos de calidad están deprimiendo el OEE',
+    desc:'La correlación entre el aumento de rechazos y la caída del OEE es directa: cada pieza rechazada reduce el componente de Calidad (C) del indicador, arrastrando el OEE global hacia abajo.\n\nEl OEE actual refleja una pérdida de eficiencia atribuible principalmente al factor calidad. Revisar la temperatura de la prensa de termoformado como causa probable: cuando supera los 193 °C, los rechazos aumentan un 340% en la hora siguiente.',
+    correlations:[{name:'OEE — Eficiencia global',value:0.87,color:'#b86a00'},{name:'Rechazos calidad',value:0.83,color:'#b86a00'}],
+    learning:'Este es exactamente el valor del OEE como KPI integrador: traduce un problema operativo puntual (rechazos) en un impacto medible sobre la eficiencia global de la línea. Sin el OEE, el número de rechazos por hora puede parecer tolerable; con el OEE, queda claro cuánto le cuesta a la empresa en términos de eficiencia real.'
+  },
+  {
+    sensors:['oee','piezas'],
+    level:'info', levelLabel:'ANALISIS — RENDIMIENTO Y PRODUCCION ACUMULADA',
+    title:'Correlación entre OEE y piezas producidas en el turno',
+    desc:'A medida que avanza el turno y se acumulan piezas, el OEE tiende a estabilizarse o degradarse levemente. El componente de Rendimiento (R) refleja qué tan cerca está la producción real de la producción teórica posible en el tiempo efectivo de marcha.\n\nSi el OEE sube con las piezas producidas, la línea está operando de forma consistente. Si el OEE cae a medida que avanzan las horas, hay una degradación progresiva — fatiga, desgaste térmico u otros factores acumulativos.',
+    correlations:[{name:'OEE — Eficiencia global',value:0.79,color:'#1b7075'},{name:'Piezas producidas turno',value:0.74,color:'#22909a'}],
+    learning:'El OEE no es solo un número de cierre de turno: calculado en tiempo real muestra la tendencia de eficiencia a lo largo del turno. Correlacionarlo con la producción acumulada permite detectar si la línea mantiene su ritmo o se va degradando, algo imposible de ver con reportes manuales al final del día.'
+  },
+  {
+    sensors:['piezas','rechazos'],
+    level:'info', levelLabel:'ANALISIS — CALIDAD Y PRODUCCION',
+    title:'Correlación entre volumen acumulado y tasa de rechazo',
+    desc:'A medida que avanza el turno y se incrementa el acumulado de piezas producidas, la tasa de rechazo tiende a aumentar progresivamente. El patrón sugiere fatiga del operario o desgaste térmico acumulado en la prensa de termoformado.\n\nEl efecto se hace estadísticamente significativo en la segunda mitad del turno.',
+    correlations:[{name:'Piezas producidas turno',value:0.72,color:'#1b7075'},{name:'Rechazos calidad',value:0.68,color:'#22909a'}],
+    learning:'Este análisis conecta datos de productividad con datos de calidad. Cada indicador por separado puede parecer aceptable; al correlacionarlos en el tiempo emerge un patrón de degradación progresiva que permite intervenir antes de que los rechazos se disparen hacia el final del turno.'
+  },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let selected=[];
+let sensorValues={};
+let prevValues={};
+let isPaused=false;
+let pieceT1=0, pieceT2=0;
+let pauseMinT1=0, pauseMinT2=0; // minutos de pausa acumulados por turno
+let rejectAccumT1=0, rejectAccumT2=0; // rechazos acumulados estimados
+let lastTickMinute=-1;
+let pauseFixed=false;
+let fixedT1='10:00', fixedT2='17:00';
+
+// ─── PAUSE CONFIG UI ──────────────────────────────────────────────────────────
+function onPauseInput(){
+  document.getElementById('btnFijar').classList.add('visible');
+}
+function fijarPausa(){
+  fixedT1=document.getElementById('pauseT1').value||'10:00';
+  fixedT2=document.getElementById('pauseT2').value||'17:00';
+  pauseFixed=true;
+  document.getElementById('pauseEditArea').style.display='none';
+  const lbl=document.getElementById('pauseFixedLabel');
+  document.getElementById('pauseFixedText').textContent=
+    'Turno 1: '+fixedT1+' hs   ·   Turno 2: '+fixedT2+' hs   ·   Duración: 10 min';
+  lbl.classList.add('visible');
+}
+function editarPausa(){
+  pauseFixed=false;
+  document.getElementById('pauseFixedLabel').classList.remove('visible');
+  document.getElementById('pauseEditArea').style.display='flex';
+  document.getElementById('btnFijar').classList.add('visible');
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function getShift(now){
+  const h=now.getHours();
+  if(h>=7&&h<14) return 1;
+  if(h>=14&&h<21) return 2;
+  return 0;
+}
+function getPauseMinutes(turn){
+  const val=turn===1?(pauseFixed?fixedT1:document.getElementById('pauseT1').value)
+                    :(pauseFixed?fixedT2:document.getElementById('pauseT2').value);
+  if(!val) return null;
+  const [h,m]=val.split(':').map(Number);
+  return h*60+m;
+}
+function checkPause(now){
+  const shift=getShift(now);
+  if(shift===0){isPaused=false;return;}
+  const pStart=getPauseMinutes(shift);
+  if(pStart===null){isPaused=false;return;}
+  const nowMin=now.getHours()*60+now.getMinutes();
+  isPaused=nowMin>=pStart&&nowMin<pStart+10;
+}
+function getValueState(s, val){
+  if(s.pauseSensor||s.piecesSensor) return 'neutral';
+  const devPct=Math.abs((val-s.base)/s.base)*100;
+  if(devPct>=s.errPct) return 'err';
+  if(devPct>=s.warnPct) return 'warn';
+  return 'ok';
+}
+
+// ─── CLOCK & UI ───────────────────────────────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0');
+  return now;
+}
+function updateShiftUI(now){
+  const shift=getShift(now);
+  const badge=document.getElementById('shiftBadge');
+  if(shift===1) badge.textContent='Turno 1  ·  07:00 – 14:00';
+  else if(shift===2) badge.textContent='Turno 2  ·  14:00 – 21:00';
+  else badge.textContent='Fuera de turno productivo';
+
+
+
+  let nextLabel='--';
+  if(shift>0){
+    const pStart=getPauseMinutes(shift);
+    if(pStart!==null){
+      const nowMin=now.getHours()*60+now.getMinutes();
+      if(isPaused) nextLabel='ACTIVA';
+      else{ const h=Math.floor(pStart/60),m=pStart%60; nextLabel=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+' hs'; }
+    }
+  }
+  document.getElementById('nextPauseLabel').textContent=nextLabel;
+}
+
+// ─── VALUES ───────────────────────────────────────────────────────────────────
+function calcInitialPieces(){
+  const now=new Date();
+  const h=now.getHours(), m=now.getMinutes();
+  const RATE=65/60;
+  const REJECT_RATE=4/60; // rechazos/min promedio histórico
+  if(h>=7&&h<14){
+    const elapsed=(h-7)*60+m;
+    pieceT1=Math.round(elapsed*RATE*0.97);
+    pieceT2=0;
+    pauseMinT1=0; pauseMinT2=0;
+    rejectAccumT1=Math.round(elapsed*REJECT_RATE);
+    rejectAccumT2=0;
+  } else if(h>=14&&h<21){
+    pieceT1=Math.round(448+Math.random()*10);
+    const elapsed=(h-14)*60+m;
+    pieceT2=Math.round(elapsed*RATE*0.97);
+    pauseMinT1=10; // una pausa ya ocurrió en T1
+    pauseMinT2=0;
+    rejectAccumT1=Math.round(420*0.06); // ~6% de rechazos histórico
+    rejectAccumT2=Math.round(elapsed*REJECT_RATE);
+  } else {
+    pieceT1=Math.round(448+Math.random()*10);
+    pieceT2=0;
+    pauseMinT1=10; pauseMinT2=0;
+    rejectAccumT1=Math.round(420*0.06);
+    rejectAccumT2=0;
+  }
+}
+function initValues(){
+  SENSORS.forEach(s=>{
+    if(s.pauseSensor||s.piecesSensor){sensorValues[s.id]=0;prevValues[s.id]=0;return;}
+    sensorValues[s.id]=+(s.base+(Math.random()-0.5)*s.range*0.3).toFixed(s.decim);
+    prevValues[s.id]=sensorValues[s.id];
+  });
+  calcInitialPieces();
+}
+function tickValues(now){
+  const shift=getShift(now);
+  const curMin=now.getHours()*60+now.getMinutes();
+  if(curMin!==lastTickMinute){
+    lastTickMinute=curMin;
+    if(shift>0){
+      if(!isPaused){
+        if(shift===1){ pieceT1++; rejectAccumT1+=Math.random()<0.07?1:0; }
+        else if(shift===2){ pieceT2++; rejectAccumT2+=Math.random()<0.07?1:0; }
+      } else {
+        if(shift===1) pauseMinT1++;
+        else if(shift===2) pauseMinT2++;
+      }
+    }
+    if(now.getHours()===7&&now.getMinutes()===0){pieceT1=0;pauseMinT1=0;rejectAccumT1=0;}
+    if(now.getHours()===14&&now.getMinutes()===0){pieceT2=0;pauseMinT2=0;rejectAccumT2=0;}
+  }
+  SENSORS.forEach(s=>{
+    prevValues[s.id]=sensorValues[s.id];
+    if(s.pauseSensor){sensorValues[s.id]=isPaused?1:0;return;}
+    if(s.piecesSensor){sensorValues[s.id]=shift===1?pieceT1:shift===2?pieceT2:0;return;}
+    if(isPaused&&!s.electricalOnly){
+      const cur=sensorValues[s.id];
+      sensorValues[s.id]=+(cur+(s.pauseVal-cur)*0.3+(Math.random()-0.5)*s.range*0.05).toFixed(s.decim);
+    } else {
+      let v=sensorValues[s.id];
+      v=Math.max(s.base-s.range,Math.min(s.base+s.range,v+(Math.random()-0.5)*s.range*0.28));
+      sensorValues[s.id]=+v.toFixed(s.decim);
+    }
+  });
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+// Orden: gestión primero (piezas, producción, rechazos, pausa), luego mantenimiento
+const SENSOR_ORDER=['oee','piezas','rechazos','pausa','temp_comp','vibr_mot','consumo','aire_comp','temp_prensa'];
+
+function calcOEE(now){
+  const shift=getShift(now);
+  if(shift===0) return {oee:null,D:null,R:null,C:null};
+  const TURNO_MIN=420; // 7 horas = 420 minutos
+  const RATE_PER_MIN=65/60;
+  const pieces=shift===1?pieceT1:pieceT2;
+  const pauses=shift===1?pauseMinT1:pauseMinT2;
+  const rejects=shift===1?rejectAccumT1:rejectAccumT2;
+  const now2=new Date();
+  const elapsed=shift===1?(now2.getHours()-7)*60+now2.getMinutes():(now2.getHours()-14)*60+now2.getMinutes();
+  const elapsedClamped=Math.max(1,Math.min(TURNO_MIN,elapsed));
+  const D=Math.min(1,(elapsedClamped-pauses)/elapsedClamped);
+  const theoPieces=Math.max(1,(elapsedClamped-pauses)*RATE_PER_MIN);
+  const R=Math.min(1,pieces/theoPieces);
+  const C=pieces>0?Math.min(1,Math.max(0,(pieces-rejects)/pieces)):1;
+  const oee=D*R*C;
+  return {
+    oee:Math.round(oee*100),
+    D:Math.round(D*100),
+    R:Math.round(R*100),
+    C:Math.round(C*100)
+  };
+}
+
+function buildGrid(){
+  const grid=document.getElementById('sensorsGrid');
+  const now=new Date();
+  // OEE card first — special HTML
+  const oeeCard=`<div class="sensor-card oee-card" id="card-oee" onclick="toggleSensor('oee')">
+    <div class="s-top"><div class="s-icon">📊</div><div class="s-label">OEE — Eficiencia global</div></div>
+    <div class="s-value val-ok" id="val-oee">—</div>
+    <div class="s-unit">%</div>
+    <div class="s-state-chip chip-ok" id="chip-oee"></div>
+    <div class="s-ref" id="ref-oee">
+      <div class="oee-components" id="oeeComponents">
+        <div class="oee-row"><span class="oee-lbl">D Disponibilidad</span><span class="oee-val" id="oee-D">—</span></div>
+        <div class="oee-row"><span class="oee-lbl">R Rendimiento</span><span class="oee-val" id="oee-R">—</span></div>
+        <div class="oee-row"><span class="oee-lbl">C Calidad</span><span class="oee-val" id="oee-C">—</span></div>
+      </div>
+      <div class="s-ref-row" style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px;">
+        <span class="s-ref-label">Referencia industria</span>
+        <span class="s-ref-val ref-consigna">≥ 85%</span>
+      </div>
+    </div>
+  </div>`;
+
+  const ordered=SENSOR_ORDER.filter(id=>id!=='oee').map(id=>SENSORS.find(s=>s.id===id)).filter(Boolean);
+  const restCards=ordered.map(s=>{
+    let extraClass=s.pauseSensor?' pause-card':s.piecesSensor?' pieces-card':'';
+    return `<div class="sensor-card${extraClass}" id="card-${s.id}" onclick="toggleSensor('${s.id}')">
+      <div class="s-top"><div class="s-icon">${s.icon}</div><div class="s-label">${s.label}</div></div>
+      <div class="s-value val-ok" id="val-${s.id}">—</div>
+      <div class="s-unit">${s.unit}</div>
+      ${s.piecesSensor?`<div class="pieces-turns">
+        <div class="turn-block" id="t1block"><div class="turn-label">T1</div><div class="turn-val" id="t1val">0</div></div>
+        <div class="turn-block" id="t2block"><div class="turn-label">T2</div><div class="turn-val" id="t2val">0</div></div>
+      </div>`:`<div class="s-state-chip chip-ok" id="chip-${s.id}"></div>`}
+      <div class="s-ref" id="ref-${s.id}"></div>
+    </div>`;
+  }).join('');
+  grid.innerHTML=oeeCard+restCards;
+}
+
+function renderValues(now){
+  const shift=getShift(now);
+  document.getElementById('lineStatus').textContent=isPaused?'EN PAUSA':'EN MARCHA';
+  document.getElementById('lineStatus').className='line-status '+(isPaused?'paused':'running');
+  document.getElementById('pauseBanner').classList.toggle('visible',isPaused);
+
+  // OEE card
+  const oee=calcOEE(now);
+  const oeeValEl=document.getElementById('val-oee');
+  const oeeChipEl=document.getElementById('chip-oee');
+  const oeeCardEl=document.getElementById('card-oee');
+  if(oeeValEl&&oee.oee!==null){
+    oeeValEl.textContent=oee.oee+'%';
+    const oeeState=oee.oee>=85?'ok':oee.oee>=65?'warn':'err';
+    oeeValEl.className='s-value val-'+oeeState;
+    if(oeeCardEl){oeeCardEl.classList.remove('card-state-ok','card-state-warn','card-state-err');oeeCardEl.classList.add('card-state-'+oeeState);}
+    if(oeeChipEl){
+      const labels={ok:'Excelente',warn:'Mejorable',err:'Crítico'};
+      const chips={ok:'chip-ok',warn:'chip-warn',err:'chip-err'};
+      oeeChipEl.className='s-state-chip '+chips[oeeState];
+      oeeChipEl.textContent=labels[oeeState];
+    }
+    const dEl=document.getElementById('oee-D');
+    const rEl=document.getElementById('oee-R');
+    const cEl=document.getElementById('oee-C');
+    const pctColor=v=>v>=85?'var(--ok)':v>=70?'var(--warn-val)':'var(--err-val)';
+    if(dEl) dEl.textContent=oee.D+'%'; dEl&&(dEl.style.color=pctColor(oee.D));
+    if(rEl) rEl.textContent=oee.R+'%'; rEl&&(rEl.style.color=pctColor(oee.R));
+    if(cEl) cEl.textContent=oee.C+'%'; cEl&&(cEl.style.color=pctColor(oee.C));
+  } else if(oeeValEl){
+    oeeValEl.textContent='—';
+    oeeValEl.className='s-value val-neutral';
+    if(oeeChipEl){oeeChipEl.textContent='Fuera de turno';oeeChipEl.className='s-state-chip chip-neutral';}
+  }
+
+  SENSORS.forEach(s=>{
+    const valEl=document.getElementById('val-'+s.id);
+    const chipEl=document.getElementById('chip-'+s.id);
+    const refEl=document.getElementById('ref-'+s.id);
+    if(!valEl) return;
+    const cur=sensorValues[s.id];
+
+    const cardEl=document.getElementById('card-'+s.id);
+
+    if(s.pauseSensor){
+      valEl.textContent=cur===1?'EN PAUSA':'EN MARCHA';
+      valEl.className='s-value '+(cur===1?'val-err':'val-ok');
+      if(chipEl){chipEl.className='s-state-chip '+(cur===1?'chip-err':'chip-ok');chipEl.textContent=cur===1?'Pausa activa':'En marcha';}
+      if(cardEl){
+        cardEl.classList.toggle('paused-active',cur===1);
+        cardEl.classList.toggle('running-active',cur!==1);
+      }
+      refEl.innerHTML='<div class="s-ref-row"><span class="s-ref-label">Significado</span><span class="s-ref-val">0 = en marcha · 1 = pausa</span></div>';
+      return;
+    }
+    if(s.piecesSensor){
+      valEl.textContent=shift===1?pieceT1:shift===2?pieceT2:0;
+      valEl.className='s-value val-neutral';
+      if(cardEl){cardEl.classList.remove('card-state-ok','card-state-warn','card-state-err');cardEl.classList.add('card-state-ok');}
+      const t1b=document.getElementById('t1block'),t2b=document.getElementById('t2block');
+      const t1v=document.getElementById('t1val'),t2v=document.getElementById('t2val');
+      if(t1b&&t2b&&t1v&&t2v){
+        t1b.className='turn-block'+(shift===1?' active-turn':'');
+        t2b.className='turn-block'+(shift===2?' active-turn':'');
+        t1v.className='turn-val'+(shift===1?' active-val':'');
+        t2v.className='turn-val'+(shift===2?' active-val':'');
+        t1v.textContent=pieceT1; t2v.textContent=pieceT2;
+      }
+      const pct=s.consigna?Math.round(((shift===1?pieceT1:pieceT2)/s.consigna)*100):0;
+      refEl.innerHTML=`<div class="s-ref-row"><span class="s-ref-label">Objetivo turno</span><span class="s-ref-val ref-consigna">${s.consigna} pzas</span></div>
+        <div class="s-ref-row"><span class="s-ref-label">Progreso</span><span class="s-ref-val ref-consigna">${pct}%</span></div>`;
+      return;
+    }
+
+    valEl.textContent=cur;
+    const state=getValueState(s,cur);
+    valEl.className='s-value val-'+state;
+    // fondo de tarjeta según estado
+    if(cardEl){
+      cardEl.classList.remove('card-state-ok','card-state-warn','card-state-err');
+      cardEl.classList.add('card-state-'+state);
+    }
+    if(chipEl){
+      const labels={ok:'Normal',warn:'Leve desvío',err:'Fuera de rango'};
+      const chips={ok:'chip-ok',warn:'chip-warn',err:'chip-err'};
+      chipEl.className='s-state-chip '+chips[state];
+      chipEl.textContent=labels[state];
+    }
+
+    let refHtml='';
+    if(s.avgHist!==null) refHtml+=`<div class="s-ref-row"><span class="s-ref-label">Prom. hist.</span><span class="s-ref-val">${s.avgHist} ${s.unit}</span></div>`;
+    if(s.consigna!==null) refHtml+=`<div class="s-ref-row"><span class="s-ref-label">Consigna</span><span class="s-ref-val ref-consigna">${s.consigna} ${s.unit}</span></div>`;
+    if(s.alarmHigh!==null) refHtml+=`<div class="s-ref-row"><span class="s-ref-label">Alarma</span><span class="s-ref-val ref-alarm">&gt; ${s.alarmHigh} ${s.unit}</span></div>`;
+    refEl.innerHTML=refHtml;
+  });
+}
+
+// ─── SELECTION ────────────────────────────────────────────────────────────────
+function toggleSensor(id){
+  // OEE es seleccionable igual que cualquier sensor
+  if(selected.includes(id)){selected=selected.filter(x=>x!==id);}
+  else{
+    if(selected.length>=2){const rem=selected.shift();document.getElementById('card-'+rem).classList.remove('selected');}
+    selected.push(id);
+  }
+  document.getElementById('card-'+id).classList.toggle('selected',selected.includes(id));
+  updateSelUI();
+}
+function updateSelUI(){
+  const n=selected.length;
+  document.getElementById('selCount').textContent=n;
+  const tags=document.getElementById('selectedTags');
+  const btn=document.getElementById('btnAnalyze');
+  const LABELS={'oee':'OEE — Eficiencia global'};
+  if(n===0){tags.innerHTML='<span class="tag-empty">Ningún sensor seleccionado.</span>';btn.disabled=true;}
+  else{
+    tags.innerHTML=selected.map(id=>{
+      const s=SENSORS.find(x=>x.id===id);
+      const label=s?s.label:(LABELS[id]||id);
+      const isPause=s&&s.pauseSensor;
+      return `<div class="tag${isPause?' pause-tag':''}">${label}</div>`;
+    }).join('');
+    btn.disabled=n<2;
+    btn.textContent=n<2?'Seleccione 2 sensores':'Analizar correlación';
+  }
+  document.getElementById('alertResult').classList.remove('visible');
+  document.getElementById('processingPanel').classList.remove('visible');
+}
+
+// ─── ANALYSIS ─────────────────────────────────────────────────────────────────
+function findAlert(){
+  const sel=[...selected].sort();
+  for(const a of ALERTS){
+    const as=[...a.sensors].sort();
+    if(as.length<=sel.length&&as.every(v=>sel.includes(v))) return a;
+  }
+  return null;
+}
+const procMessages=[
+  'Importando series temporales...','Normalizando frecuencias de muestreo...',
+  'Calculando coeficientes de Pearson...','Aplicando ventana deslizante (24 h)...',
+  'Comparando contra modelos históricos...','Generando informe de correlación...',
+];
+function startAnalysis(){
+  document.getElementById('processingPanel').classList.add('visible');
+  document.getElementById('alertResult').classList.remove('visible');
+  document.getElementById('btnAnalyze').disabled=true;
+  let step=0;
+  const stepsEl=document.getElementById('procSteps');
+  const iv=setInterval(()=>{
+    if(step<procMessages.length) stepsEl.textContent='> '+procMessages[step++];
+    else{clearInterval(iv);setTimeout(showResult,300);}
+  },350);
+}
+function showResult(){
+  document.getElementById('processingPanel').classList.remove('visible');
+  document.getElementById('btnAnalyze').disabled=false;
+  const alert=findAlert();
+  const el=document.getElementById('alertResult');
+  if(!alert){
+    el.innerHTML=`<div class="alert-box none">
+      <div class="alert-level">SIN CORRELACION SIGNIFICATIVA</div>
+      <div class="alert-title">No se detectó un patrón de riesgo para la combinación seleccionada</div>
+      <div class="alert-desc">Las variables seleccionadas no presentan correlación estadísticamente significativa (r &lt; 0.60) en el período analizado. Esto no significa que los datos carezcan de valor, sino que la relación entre estas variables específicas no revela un riesgo en el período evaluado.\n\nPruebe otras combinaciones de a dos variables.</div>
+    </div>
+    <div class="learning-box">
+      <div class="learning-title">Concepto clave</div>
+      <div class="learning-text">No toda combinación de variables produce información útil. Identificar qué datos vale la pena correlacionar requiere conocimiento del proceso productivo. Allí reside la complementariedad entre el conocimiento del ingeniero de planta y el análisis de datos.</div>
+    </div>
+    <button class="btn-reset" onclick="resetSelection()">Probar otra combinación</button>`;
+  } else {
+    const corrBars=alert.correlations.map(c=>`<div class="corr-row">
+      <span class="corr-sensor">${c.name}</span>
+      <div class="corr-bar-wrap"><div class="corr-bar-fill" style="background:${c.color};" data-val="${Math.round(c.value*100)}"></div></div>
+      <span class="corr-val">r = ${c.value.toFixed(2)}</span>
+    </div>`).join('');
+    el.innerHTML=`<div class="alert-box ${alert.level}">
+      <div class="alert-level">${alert.levelLabel}</div>
+      <div class="alert-title">${alert.title}</div>
+      <div class="alert-desc">${alert.desc}</div>
+    </div>
+    <div class="corr-detail">
+      <div class="corr-title">Índice de correlación detectado (coeficiente de Pearson)</div>
+      <div class="corr-rows">${corrBars}</div>
+    </div>
+    <div class="learning-box">
+      <div class="learning-title">Por qué importa esta combinación</div>
+      <div class="learning-text">${alert.learning}</div>
+    </div>
+    <button class="btn-reset" onclick="resetSelection()">Probar otra combinación</button>`;
+    setTimeout(()=>{ document.querySelectorAll('.corr-bar-fill').forEach(b=>{b.style.width=b.dataset.val+'%';}); },80);
+  }
+  el.classList.add('visible');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function resetSelection(){
+  selected.forEach(id=>{const c=document.getElementById('card-'+id);if(c)c.classList.remove('selected');});
+  selected=[];updateSelUI();
+  document.getElementById('alertResult').classList.remove('visible');
+}
+
+// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+function tick(){
+  const now=updateClock();
+  checkPause(now);
+  updateShiftUI(now);
+  tickValues(now);
+  renderValues(now);
+}
+initValues();buildGrid();tick();
+setInterval(tick,2000);
+</script>
+</body>
+</html>
