@@ -116,10 +116,9 @@ body{
 
 /* INSTRUCTIONS */
 .instructions{
-  background:var(--teal-bg);border:1px solid rgba(27,112,117,0.2);
+  background:#ffffff;border:1px solid rgba(27,112,117,0.2);
   border-radius:var(--radius);margin:12px 20px;padding:12px 16px;
   font-size:14px;color:var(--text2);line-height:1.65;
-  display:flex;gap:10px;align-items:flex-start;
 }
 
 /* MAIN LAYOUT */
@@ -398,7 +397,6 @@ body{
 
 <!-- INSTRUCTIONS -->
 <div class="instructions">
-  <div style="flex-shrink:0;margin-top:1px;color:var(--teal);font-weight:700;">i</div>
   <div>
     <strong>Objetivo:</strong> Seleccione 2 sensores de la Línea 1 y presione <em>Analizar correlación</em>. El motor de correlación identificará patrones de riesgo presentes en los datos. Cada tarjeta muestra el valor en tiempo real junto con el promedio histórico y la consigna de referencia cuando corresponde.
   </div>
@@ -441,7 +439,7 @@ body{
 
 <!-- STATUS BAR -->
 <div class="status-bar">
-  <div class="s-item"><div class="s-dot" style="background:var(--ok);"></div> Variables activas: 10</div>
+  <div class="s-item"><div class="s-dot" style="background:var(--ok);"></div> Variables activas: 9</div>
   <div class="s-item"><div class="s-dot" style="background:var(--teal);"></div> Frecuencia de muestreo: 2 s</div>
   <div class="s-item"><div class="s-dot" style="background:var(--amber);"></div> Próxima pausa: <strong id="nextPauseLabel">--</strong></div>
 </div>
@@ -537,6 +535,14 @@ const ALERTS = [
     desc:'A medida que avanza el turno y se acumulan piezas, el OEE tiende a estabilizarse o degradarse levemente. El componente de Rendimiento (R) refleja qué tan cerca está la producción real de la producción teórica posible en el tiempo efectivo de marcha.\n\nSi el OEE sube con las piezas producidas, la línea está operando de forma consistente. Si el OEE cae a medida que avanzan las horas, hay una degradación progresiva — fatiga, desgaste térmico u otros factores acumulativos.',
     correlations:[{name:'OEE — Eficiencia global',value:0.79,color:'#1b7075'},{name:'Piezas producidas turno',value:0.74,color:'#22909a'}],
     learning:'El OEE no es solo un número de cierre de turno: calculado en tiempo real muestra la tendencia de eficiencia a lo largo del turno. Correlacionarlo con la producción acumulada permite detectar si la línea mantiene su ritmo o se va degradando, algo imposible de ver con reportes manuales al final del día.'
+  },
+  {
+    sensors:['pausa','oee'],
+    level:'warning', levelLabel:'ADVERTENCIA — DISPONIBILIDAD IMPACTANDO OEE',
+    title:'Las pausas programadas están reduciendo la Disponibilidad del OEE',
+    desc:'El componente de Disponibilidad (D) del OEE mide el tiempo en que la línea estuvo realmente activa respecto al tiempo planificado. Cada minuto de pausa programada reduce D directamente.\n\nEn una planta real, la Disponibilidad no solo se ve afectada por las pausas de refrigerio: cualquier fallo que detenga la línea —una rotura mecánica, una alarma de seguridad, un corte de suministro de aire comprimido— impacta sobre este componente del mismo modo. La diferencia es que las pausas son planificadas y predecibles; las paradas por fallo no lo son, y son precisamente las que el mantenimiento predictivo busca anticipar.',
+    correlations:[{name:'Estado de pausa',value:0.91,color:'#b86a00'},{name:'OEE — Eficiencia global',value:0.88,color:'#c97000'}],
+    learning:'Esta correlación ilustra el vínculo entre la gestión operativa (cuándo y cuánto tiempo se detiene la línea) y el indicador de eficiencia global. Un sistema de monitoreo integral permite calcular el OEE en tiempo real precisamente porque registra cada evento de parada — planificada o no — en el momento en que ocurre, sin depender de registros manuales.'
   },
   {
     sensors:['piezas','rechazos'],
