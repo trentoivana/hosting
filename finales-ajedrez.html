@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finales de ajedrez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols+2&display=swap&text=%E2%99%94%E2%99%95%E2%99%96%E2%99%97%E2%99%98%E2%99%99%E2%99%9A%E2%99%9B%E2%99%9C%E2%99%9D%E2%99%9E%E2%99%9F">
+<style>
+:root{
+  --paper:#F2F4F3; --panel:#FFFFFF; --ink:#1D2329; --muted:#5A6570; --line:#CBD3D8;
+  --accent:#2346B8; --accent-ink:#FFFFFF; --accent-soft:#E3E9FA;
+  --sq-light:#E8EDF0; --sq-dark:#8CA2B4; --mark:rgba(232,168,20,.50); --check:rgba(214,48,49,.55);
+  --piece-dark:#15191D; --piece-light:#FFFFFF; --ok:#1E7A4C; --warn:#A33A1D;
+  --serif:"Alegreya",Georgia,"Times New Roman",serif;
+  --sans:"Alegreya Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --glyph:"Noto Sans Symbols 2","Segoe UI Symbol","Apple Symbols","DejaVu Sans",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1A1F25; --panel:#222932; --ink:#E6EAEE; --muted:#9CA8B3; --line:#3A4652;
+    --accent:#8FA8FF; --accent-ink:#10162A; --accent-soft:#2B3552;
+    --sq-light:#D3DCE3; --sq-dark:#7890A3; --ok:#6CCB97; --warn:#F09A7E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1A1F25; --panel:#222932; --ink:#E6EAEE; --muted:#9CA8B3; --line:#3A4652;
+  --accent:#8FA8FF; --accent-ink:#10162A; --accent-soft:#2B3552;
+  --sq-light:#D3DCE3; --sq-dark:#7890A3; --ok:#6CCB97; --warn:#F09A7E;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1060px;margin:0 auto;padding:28px 20px 48px}
+header{margin-bottom:26px;max-width:62ch}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;margin:0 0 8px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);font-size:1.08rem}
+
+.layout{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr);gap:26px}}
+
+/* Diagrama al estilo de libro de finales */
+.diagram{position:relative}
+.frame{border:3px solid var(--ink);padding:4px;background:var(--paper);position:relative}
+.frame::before{content:"";position:absolute;inset:4px;border:1px solid var(--ink);pointer-events:none;z-index:2}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));aspect-ratio:1/1;container-type:inline-size;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.sq{position:relative;min-width:0;min-height:0;overflow:hidden;border:0;padding:0;margin:0;background:var(--sq-light);display:grid;place-items:center;cursor:default;font-size:10.4cqi;line-height:1}
+.sq.dark{background:var(--sq-dark)}
+.board.live .sq{cursor:pointer}
+.sq:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;z-index:3}
+.sq.last::after,.sq.sel::after,.sq.chk::after{content:"";position:absolute;inset:0;pointer-events:none}
+.sq.last::after{background:var(--mark)}
+.sq.sel::after{background:rgba(35,70,184,.38)}
+.sq.chk::after{background:radial-gradient(circle,var(--check) 0 40%,transparent 72%)}
+.sq .dot{position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(21,25,29,.30);pointer-events:none;z-index:2}
+.sq .ring{position:absolute;inset:6%;border-radius:50%;border:4px solid rgba(21,25,29,.30);pointer-events:none;z-index:2}
+.pc{position:relative;z-index:1;display:grid;place-items:center;font-family:var(--glyph);width:100%;height:100%}
+.pc span{grid-area:1/1}
+.pc .fill{color:var(--piece-light)}
+.pc .out{color:var(--piece-dark)}
+.pc.b .solid{color:var(--piece-dark)}
+.coord{position:absolute;font-family:var(--sans);font-weight:700;font-size:2.6cqi;line-height:1;pointer-events:none;color:var(--piece-dark);opacity:.62}
+.coord.rank{top:5%;left:6%}
+.coord.file{bottom:5%;right:7%}
+
+.caption{font-family:var(--serif);font-style:italic;font-size:1.22rem;margin:12px 0 2px;text-align:center}
+.matline{text-align:center;margin:0;color:var(--muted);font-size:1.02rem}
+.matline .g{font-family:var(--glyph);font-size:1.15em;color:var(--ink);letter-spacing:.04em}
+
+.tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+
+.btn{border:1.5px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500;line-height:1.2}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 18px;font-size:1.05rem}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Panel */
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.tabs{display:flex;border-bottom:1.5px solid var(--line);overflow-x:auto}
+.tab{flex:1 0 auto;border:0;background:transparent;padding:13px 14px 11px;cursor:pointer;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.pane{padding:20px}
+.pane[hidden]{display:none}
+.pane h2{font-family:var(--serif);font-size:1.3rem;margin:0 0 10px;font-weight:700}
+.pane h3{font-size:1rem;margin:0 0 8px;font-weight:700}
+.help{color:var(--muted);margin:0 0 14px;font-size:.98rem}
+.field{margin-bottom:18px}
+.field > label, .legend{display:block;font-weight:700;margin-bottom:6px}
+select,input[type=text]{width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper)}
+
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+@media (max-width:380px){.sides{grid-template-columns:1fr}}
+.side h3{display:flex;align-items:center;gap:6px}
+.side h3 .g{font-family:var(--glyph);font-size:1.3em;font-weight:400}
+.step{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .name{display:flex;align-items:center;gap:8px}
+.step .name .g{font-family:var(--glyph);font-size:1.25em;width:1.2em;text-align:center}
+.ctrl{display:flex;align-items:center;gap:4px}
+.ctrl button{width:32px;height:32px;border:1.5px solid var(--line);background:var(--paper);border-radius:6px;cursor:pointer;font-weight:700;font-size:1.1rem;line-height:1}
+.ctrl button:disabled{opacity:.35;cursor:not-allowed}
+.ctrl output{min-width:1.6em;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:8px 14px;cursor:pointer;border-right:1.5px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);font-weight:700}
+.checks label{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;cursor:pointer}
+.checks input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+
+.status{min-height:1.4em;margin:12px 0 0;font-size:.98rem}
+.status.err{color:var(--warn)} .status.ok{color:var(--ok)}
+details{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:700}
+.row{display:flex;gap:8px;margin-top:10px}
+.row input{flex:1}
+
+/* Armar */
+.plist{list-style:none;margin:0 0 16px;padding:0}
+.plist li label{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.plist input{width:19px;height:19px;accent-color:var(--accent);flex:none}
+.plist .g{font-family:var(--glyph);font-size:1.4em;width:1.2em;text-align:center}
+.plist .sqn{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;font-size:1.08rem}
+.plist li.done label{color:var(--muted)}
+.plist li.done .sqn{text-decoration:line-through}
+.progress{font-weight:700;margin:0 0 14px}
+
+/* Jugar */
+.moves{font-variant-numeric:tabular-nums;max-height:220px;overflow:auto;border:1.5px solid var(--line);border-radius:6px;padding:10px 12px;margin:14px 0;background:var(--paper);min-height:52px}
+.moves ol{margin:0;padding-left:2.2em;columns:2;column-gap:24px}
+.moves li{break-inside:avoid}
+.moves .empty{color:var(--muted);margin:0}
+.gamestatus{font-family:var(--serif);font-size:1.15rem;font-weight:700;margin:10px 0 0}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Guardados */
+.saved{list-style:none;margin:0;padding:0}
+.saved li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.saved .meta{flex:1 1 180px;min-width:0}
+.saved .meta strong{display:block}
+.saved .meta small{color:var(--muted);word-break:break-all}
+
+/* Promoción */
+.promo{position:absolute;inset:0;background:rgba(21,25,29,.55);display:grid;place-items:center;z-index:5}
+.promo[hidden]{display:none}
+.promo-box{background:var(--panel);border-radius:10px;padding:16px;text-align:center}
+.promo-box p{margin:0 0 10px;font-weight:700}
+.promo-box button{font-family:var(--glyph);font-size:2.4rem;width:64px;height:64px;border:1.5px solid var(--line);border-radius:8px;background:var(--sq-light);color:var(--piece-dark);cursor:pointer;margin:0 3px}
+
+@media (max-width:420px){.tab{padding:12px 9px 10px;font-size:.95rem}.pane{padding:16px}}
+footer{margin-top:40px;color:var(--muted);font-size:.92rem;max-width:70ch}
+@media (prefers-reduced-motion: no-preference){
+  .board.fresh .pc{animation:drop .32s ease-out both}
+  @keyframes drop{from{transform:translateY(-14%);opacity:0}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Finales de ajedrez</h1>
+    <p>Elige el material de cada bando, genera una posición legal, ármala en tu tablero y juégala. También puedes jugarla en pantalla contra la computadora.</p>
+  </header>
+
+  <main class="layout">
+    <section class="diagram" aria-label="Tablero">
+      <div class="frame">
+        <div class="board" id="board" role="grid" aria-label="Tablero de ajedrez"></div>
+        <div class="promo" id="promo" hidden>
+          <div class="promo-box" role="dialog" aria-label="Elegir pieza de coronación">
+            <p>Coronar como</p>
+            <div id="promoBtns"></div>
+          </div>
+        </div>
+      </div>
+      <p class="caption" id="caption">Genera un final para comenzar</p>
+      <p class="matline" id="matline"></p>
+      <div class="tools">
+        <button class="btn" id="flipBtn">Girar tablero</button>
+        <button class="btn" id="copyBtn">Copiar FEN</button>
+        <button class="btn" id="saveBtn">Guardar posición</button>
+      </div>
+      <p class="status" id="toolStatus" role="status" style="text-align:center"></p>
+    </section>
+
+    <section class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="t-config" aria-controls="p-config" aria-selected="true">Configurar</button>
+        <button class="tab" role="tab" id="t-setup" aria-controls="p-setup" aria-selected="false">Armar</button>
+        <button class="tab" role="tab" id="t-play" aria-controls="p-play" aria-selected="false">Jugar</button>
+        <button class="tab" role="tab" id="t-saved" aria-controls="p-saved" aria-selected="false">Guardados</button>
+      </div>
+
+      <div class="pane" id="p-config" role="tabpanel" aria-labelledby="t-config">
+        <div class="field">
+          <label for="preset">Tipo de final</label>
+          <select id="preset"></select>
+        </div>
+        <div class="sides">
+          <div class="side" id="side-w"><h3><span class="g">♔</span> Blancas</h3></div>
+          <div class="side" id="side-b"><h3><span class="g">♚&#xFE0E;</span> Negras</h3></div>
+        </div>
+        <div class="field">
+          <span class="legend" id="turnLbl">Empiezan</span>
+          <div class="seg" id="turnSeg" role="group" aria-labelledby="turnLbl">
+            <button data-v="w">Blancas</button><button data-v="b">Negras</button><button data-v="x">Al azar</button>
+          </div>
+        </div>
+        <div class="field checks">
+          <label><input type="checkbox" id="optCheck"> Evitar que el bando que mueve empiece en jaque</label>
+          <label><input type="checkbox" id="optCapt"> Evitar capturas en la primera jugada</label>
+          <label><input type="checkbox" id="optBish"> Alfiles de distinto color (cuando cada bando tiene uno)</label>
+        </div>
+        <button class="btn primary" id="genBtn">Generar final</button>
+        <p class="status" id="genStatus" role="status"></p>
+        <details>
+          <summary>Cargar una posición propia (FEN)</summary>
+          <p class="help" style="margin-top:8px">Pega la notación FEN de una posición, por ejemplo copiada de Lichess.</p>
+          <div class="row"><input type="text" id="fenIn" aria-label="FEN" placeholder="8/8/8/4k3/8/8/4P3/4K3 w - - 0 1"><button class="btn" id="fenBtn">Cargar</button></div>
+        </details>
+      </div>
+
+      <div class="pane" id="p-setup" role="tabpanel" aria-labelledby="t-setup" hidden>
+        <h2>Armar en el tablero</h2>
+        <p class="help">Coloca cada pieza en tu tablero físico y márcala. El tablero queda vacío salvo estas piezas.</p>
+        <p class="progress" id="progress"></p>
+        <div id="setupLists"></div>
+        <div class="btnrow">
+          <button class="btn primary" id="toPlayBtn">Jugar en pantalla</button>
+          <button class="btn" id="anotherBtn">Generar otro</button>
+        </div>
+      </div>
+
+      <div class="pane" id="p-play" role="tabpanel" aria-labelledby="t-play" hidden>
+        <h2>Jugar la posición</h2>
+        <div class="field">
+          <span class="legend" id="rivalLbl">Rival</span>
+          <div class="seg" id="rivalSeg" role="group" aria-labelledby="rivalLbl">
+            <button data-v="cpu">Computadora</button><button data-v="human">Otra persona</button>
+          </div>
+        </div>
+        <div id="cpuOpts">
+          <div class="field">
+            <span class="legend" id="colorLbl">Tú juegas con</span>
+            <div class="seg" id="colorSeg" role="group" aria-labelledby="colorLbl">
+              <button data-v="turn">El bando que mueve</button><button data-v="w">Blancas</button><button data-v="b">Negras</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="legend" id="lvlLbl">Nivel</span>
+            <div class="seg" id="lvlSeg" role="group" aria-labelledby="lvlLbl">
+              <button data-v="1">Fácil</button><button data-v="2">Normal</button><button data-v="3">Fuerte</button>
+            </div>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="btn primary" id="startBtn">Empezar partida</button>
+          <button class="btn" id="undoBtn">Deshacer</button>
+          <button class="btn" id="resetBtn">Volver a la posición inicial</button>
+        </div>
+        <p class="gamestatus" id="gameStatus" role="status"></p>
+        <div class="moves" id="moves" aria-label="Jugadas"></div>
+      </div>
+
+      <div class="pane" id="p-saved" role="tabpanel" aria-labelledby="t-saved" hidden>
+        <h2>Posiciones guardadas</h2>
+        <p class="help">Se guardan en este navegador. Usa «Guardar posición» debajo del tablero para agregar la actual.</p>
+        <ul class="saved" id="savedList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Las posiciones generadas son siempre legales, pero no todas tienen un resultado definido de antemano: algunas se ganan y otras terminan en tablas. La computadora es un rival básico pensado para practicar.
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.js"></script>
+<script>if(typeof Chess==="undefined"){document.write("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js\"><\/script>")}</script>
+<script>
+/* ===== Núcleo: generación de finales y motor básico ===== */
+var Core = (function () {
+  var FILES = 'abcdefgh';
+  function sq(f, r) { return FILES[f] + (r + 1); }
+  function isLight(f, r) { return (f + r) % 2 === 1; }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+
+  // material: {w:{q,r,b,n,p}, b:{...}}; opts: {turn:'w'|'b'|'x', oppositeBishops, noCheck, noCaptures}
+  function generate(material, opts, maxTries) {
+    maxTries = maxTries || 6000;
+    for (var t = 0; t < maxTries; t++) {
+      var fen = tryOnce(material, opts);
+      if (fen) return fen;
+    }
+    return null;
+  }
+
+  function tryOnce(material, opts) {
+    var board = {}; // 'e4' -> 'wK'
+    function free(f, r) { return !board[sq(f, r)]; }
+    function place(code, filter) {
+      var cands = [];
+      for (var f = 0; f < 8; f++) for (var r = 0; r < 8; r++)
+        if (free(f, r) && (!filter || filter(f, r))) cands.push([f, r]);
+      if (!cands.length) return null;
+      var c = cands[rnd(cands.length)];
+      board[sq(c[0], c[1])] = code;
+      return c;
+    }
+    var wk = place('wK');
+    var bk = place('bK', function (f, r) { return Math.max(Math.abs(f - wk[0]), Math.abs(r - wk[1])) > 1; });
+    if (!bk) return null;
+
+    var firstBishopColor = {}; // side -> light?
+    var bishopsAll = [];
+    var order = ['q', 'r', 'b', 'n', 'p'];
+    var sides = ['w', 'b'];
+    for (var s = 0; s < 2; s++) {
+      var side = sides[s];
+      for (var i = 0; i < order.length; i++) {
+        var p = order[i], count = material[side][p] || 0;
+        for (var k = 0; k < count; k++) {
+          var filter = null;
+          if (p === 'p') filter = function (f, r) { return r >= 1 && r <= 6; };
+          if (p === 'b') {
+            (function (side) {
+              if (firstBishopColor[side] !== undefined) {
+                // pareja de alfiles del mismo bando: colores distintos
+                var want = !firstBishopColor[side];
+                filter = function (f, r) { return isLight(f, r) === want; };
+              } else if (opts.oppositeBishops && side === 'b' && firstBishopColor.w !== undefined) {
+                var want2 = !firstBishopColor.w;
+                filter = function (f, r) { return isLight(f, r) === want2; };
+              }
+            })(side);
+          }
+          var c = place(side + p.toUpperCase(), filter);
+          if (!c) return null;
+          if (p === 'b' && firstBishopColor[side] === undefined) firstBishopColor[side] = isLight(c[0], c[1]);
+        }
+      }
+    }
+    var turn = opts.turn === 'x' ? (Math.random() < 0.5 ? 'w' : 'b') : opts.turn;
+    var fen = boardToFen(board, turn);
+    return validatePosition(fen, opts) ? fen : null;
+  }
+
+  function boardToFen(board, turn) {
+    var rows = [];
+    for (var r = 7; r >= 0; r--) {
+      var row = '', empty = 0;
+      for (var f = 0; f < 8; f++) {
+        var code = board[sq(f, r)];
+        if (!code) { empty++; continue; }
+        if (empty) { row += empty; empty = 0; }
+        row += code[0] === 'w' ? code[1] : code[1].toLowerCase();
+      }
+      if (empty) row += empty;
+      rows.push(row);
+    }
+    return rows.join('/') + ' ' + turn + ' - - 0 1';
+  }
+
+  function flipTurn(fen) {
+    var parts = fen.split(' ');
+    parts[1] = parts[1] === 'w' ? 'b' : 'w';
+    parts[3] = '-';
+    return parts.join(' ');
+  }
+
+  // Comprueba legalidad y filtros de interés
+  function validatePosition(fen, opts) {
+    var g = new Chess();
+    if (!g.validate_fen(fen).valid) return false;
+    if (!g.load(fen)) return false;
+    var other = new Chess();
+    other.load(flipTurn(fen));
+    if (other.in_check()) return false; // el bando que no mueve no puede estar en jaque
+    if (g.in_checkmate() || g.in_stalemate()) return false;
+    if (opts && opts.noCheck && g.in_check()) return false;
+    if (opts && opts.noCaptures) {
+      var ms = g.moves({ verbose: true });
+      for (var i = 0; i < ms.length; i++) if (ms[i].flags.indexOf('c') >= 0 || ms[i].flags.indexOf('e') >= 0) return false;
+    }
+    return true;
+  }
+
+  // Validación para una FEN pegada por el usuario
+  function checkUserFen(fen) {
+    var g = new Chess();
+    var v = g.validate_fen(fen);
+    if (!v.valid) return 'La FEN no es válida: revisa que tenga seis campos y ocho filas.';
+    g.load(fen);
+    var other = new Chess(); other.load(flipTurn(fen));
+    if (other.in_check()) return 'La posición es ilegal: el bando que no mueve está en jaque.';
+    var kings = { w: 0, b: 0 };
+    fen.split(' ')[0].replace(/[kK]/g, function (c) { kings[c === 'K' ? 'w' : 'b']++; return c; });
+    if (kings.w !== 1 || kings.b !== 1) return 'Cada bando debe tener exactamente un rey.';
+    return null;
+  }
+
+  /* ===== Motor básico (negamax con poda alfa-beta) ===== */
+  var VAL = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
+  var PAWN_ADV = [0, 0, 6, 12, 22, 38, 65, 0];
+
+  function readBoard(fen) {
+    var rows = fen.split(' ')[0].split('/'), out = [];
+    for (var i = 0; i < 8; i++) {
+      var r = 7 - i, f = 0;
+      for (var j = 0; j < rows[i].length; j++) {
+        var c = rows[i][j];
+        if (c >= '1' && c <= '8') { f += +c; continue; }
+        out.push({ t: c.toLowerCase(), c: c === c.toUpperCase() ? 'w' : 'b', f: f, r: r });
+        f++;
+      }
+    }
+    return out;
+  }
+
+  // Evaluación desde el punto de vista de las blancas
+  function evaluate(fen) {
+    var pcs = readBoard(fen), score = 0, mat = { w: 0, b: 0 }, king = {};
+    for (var i = 0; i < pcs.length; i++) {
+      var p = pcs[i], s = p.c === 'w' ? 1 : -1;
+      if (p.t === 'k') { king[p.c] = p; continue; }
+      mat[p.c] += VAL[p.t];
+      score += s * VAL[p.t];
+      if (p.t === 'p') score += s * PAWN_ADV[p.c === 'w' ? p.r : 7 - p.r];
+    }
+    function centerDist(k) { return Math.max(3 - k.f, k.f - 4) + Math.max(3 - k.r, k.r - 4); }
+    function kdist(a, b) { return Math.abs(a.f - b.f) + Math.abs(a.r - b.r); }
+    // Centralización del rey en finales
+    score += (6 - centerDist(king.w)) * 4 - (6 - centerDist(king.b)) * 4;
+    // Arrinconar al rey rival cuando hay ventaja clara
+    var diff = mat.w - mat.b;
+    if (diff >= 300) score += centerDist(king.b) * 12 + (14 - kdist(king.w, king.b)) * 5;
+    if (diff <= -300) score -= centerDist(king.w) * 12 + (14 - kdist(king.w, king.b)) * 5;
+    return score;
+  }
+
+  var MATE = 100000;
+
+  function orderMoves(ms) {
+    return ms.sort(function (a, b) { return moveScore(b) - moveScore(a); });
+  }
+  function moveScore(m) {
+    var s = 0;
+    if (m.captured) s += 10 * VAL[m.captured] - VAL[m.piece];
+    if (m.promotion) s += VAL[m.promotion];
+    if (m.san.indexOf('+') >= 0) s += 50;
+    return s;
+  }
+
+  function search(g, depth, alpha, beta, ply, ctx) {
+    ctx.nodes++;
+    if ((ctx.nodes & 255) === 0 && Date.now() > ctx.deadline) { ctx.stop = true; return 0; }
+    if (g.in_checkmate()) return -MATE + ply;
+    if (g.in_stalemate() || g.insufficient_material() || (ply > 0 && g.in_threefold_repetition())) return 0;
+    var sign = g.turn() === 'w' ? 1 : -1;
+    if (depth <= 0) return quiesce(g, alpha, beta, 4, ctx);
+    var ms = orderMoves(g.moves({ verbose: true }));
+    var best = -Infinity;
+    for (var i = 0; i < ms.length; i++) {
+      g.move(ms[i]);
+      var v = -search(g, depth - 1, -beta, -alpha, ply + 1, ctx);
+      g.undo();
+      if (ctx.stop) return 0;
+      if (v > best) best = v;
+      if (v > alpha) alpha = v;
+      if (alpha >= beta) break;
+    }
+    return best;
+  }
+
+  function quiesce(g, alpha, beta, qdepth, ctx) {
+    ctx.nodes++;
+    var sign = g.turn() === 'w' ? 1 : -1;
+    var stand = sign * evaluate(g.fen());
+    if (stand >= beta || qdepth === 0) return stand;
+    if (stand > alpha) alpha = stand;
+    var ms = g.moves({ verbose: true }).filter(function (m) { return m.captured || m.promotion; });
+    orderMoves(ms);
+    for (var i = 0; i < ms.length; i++) {
+      g.move(ms[i]);
+      var v = g.in_checkmate() ? MATE : -quiesce(g, -beta, -alpha, qdepth - 1, ctx);
+      g.undo();
+      if (v >= beta) return v;
+      if (v > alpha) alpha = v;
+    }
+    return alpha;
+  }
+
+  // level: 1 fácil, 2 normal, 3 fuerte
+  function bestMove(fen, level) {
+    var g = new Chess(); g.load(fen);
+    var ms = orderMoves(g.moves({ verbose: true }));
+    if (!ms.length) return null;
+    var cfg = { 1: { d: 1, ms: 300, noise: 90 }, 2: { d: 4, ms: 900, noise: 0 }, 3: { d: 7, ms: 2200, noise: 0 } }[level] || { d: 4, ms: 900, noise: 0 };
+    var ctx = { nodes: 0, deadline: Date.now() + cfg.ms, stop: false };
+    var bestOverall = ms[0];
+    for (var depth = 1; depth <= cfg.d; depth++) {
+      var bestV = -Infinity, bestM = null, alpha = -Infinity;
+      for (var i = 0; i < ms.length; i++) {
+        g.move(ms[i]);
+        var v = -search(g, depth - 1, -Infinity, -alpha, 1, ctx);
+        g.undo();
+        if (ctx.stop) break;
+        v += cfg.noise ? (Math.random() * cfg.noise) : 0;
+        if (v > bestV) { bestV = v; bestM = ms[i]; }
+        if (v > alpha) alpha = v;
+      }
+      if (ctx.stop) break;
+      bestOverall = bestM;
+      // mover la mejor jugada al inicio para la siguiente iteración
+      ms.splice(ms.indexOf(bestM), 1); ms.unshift(bestM);
+      if (bestV > MATE - 100) break;
+    }
+    return bestOverall;
+  }
+
+  return { generate: generate, validatePosition: validatePosition, checkUserFen: checkUserFen, bestMove: bestMove, evaluate: evaluate, readBoard: readBoard };
+})();
+if (typeof module !== 'undefined') module.exports = Core;
+
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var SOLID = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟\uFE0E' };
+  var OUTL = { k: '♔', q: '♕', r: '♖', b: '♗', n: '♘', p: '♙' };
+  var NAME = { k: 'Rey', q: 'Dama', r: 'Torre', b: 'Alfil', n: 'Caballo', p: 'Peón' };
+  var PLURAL = { q: 'damas', r: 'torres', b: 'alfiles', n: 'caballos', p: 'peones' };
+  var MAX = { q: 2, r: 2, b: 2, n: 2, p: 8 };
+  var ORDER = ['q', 'r', 'b', 'n', 'p'];
+  var z = function () { return { q: 0, r: 0, b: 0, n: 0, p: 0 }; };
+
+  var PRESETS = [
+    { id: 'kpk', name: 'Rey y peón contra rey', w: { p: 1 }, b: {} },
+    { id: 'kqk', name: 'Dama contra rey', w: { q: 1 }, b: {} },
+    { id: 'krk', name: 'Torre contra rey', w: { r: 1 }, b: {} },
+    { id: 'kbnk', name: 'Alfil y caballo contra rey', w: { b: 1, n: 1 }, b: {} },
+    { id: 'krpkr', name: 'Torre y peón contra torre', w: { r: 1, p: 1 }, b: { r: 1 } },
+    { id: 'kqkr', name: 'Dama contra torre', w: { q: 1 }, b: { r: 1 } },
+    { id: 'pawns', name: 'Finales de peones', w: { p: 3 }, b: { p: 3 } },
+    { id: 'ocb', name: 'Alfiles de distinto color', w: { b: 1, p: 2 }, b: { b: 1, p: 1 }, opp: true },
+    { id: 'custom', name: 'Personalizado' }
+  ];
+
+  // ---------- almacenamiento ----------
+  function load(key, def) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { } }
+
+  var S = load('finales.settings', null) || {
+    preset: 'krpkr', material: { w: { q: 0, r: 1, b: 0, n: 0, p: 1 }, b: { q: 0, r: 1, b: 0, n: 0, p: 0 } },
+    turn: 'w', noCheck: true, noCaptures: false, opp: false, rival: 'cpu', color: 'turn', level: '2'
+  };
+  function saveSettings() { store('finales.settings', S); }
+
+  // ---------- estado de juego ----------
+  var G = { startFen: null, game: null, flipped: false, selected: null, targets: [], playing: false, human: 'w', thinking: false, pending: null, fresh: false };
+
+  // ---------- utilidades ----------
+  function esSan(san) { return san.replace(/[KQRBN]/g, function (c) { return { K: 'R', Q: 'D', R: 'T', B: 'A', N: 'C' }[c]; }); }
+  function glyphHTML(t, c) {
+    if (c === 'w') return '<span class="fill">' + SOLID[t] + '</span><span class="out">' + OUTL[t] + '</span>';
+    return '<span class="solid">' + SOLID[t] + '</span>';
+  }
+  function countMaterial(fen) {
+    var m = { w: z(), b: z() };
+    Core.readBoard(fen).forEach(function (p) { if (p.t !== 'k') m[p.c][p.t]++; });
+    return m;
+  }
+  function sideWords(mm) {
+    var parts = ['rey'];
+    ORDER.forEach(function (t) {
+      var n = mm[t]; if (!n) return;
+      parts.push(n === 1 ? NAME[t].toLowerCase() : (n === 2 ? 'dos ' : n + ' ') + PLURAL[t]);
+    });
+    if (parts.length === 1) return 'Rey';
+    var s = parts.slice(0, -1).join(', ') + ' y ' + parts[parts.length - 1];
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function describe(fen) {
+    var m = countMaterial(fen);
+    return sideWords(m.w) + ' contra ' + sideWords(m.b).toLowerCase();
+  }
+  function glyphLine(mm, c) {
+    var s = c === 'w' ? OUTL.k : SOLID.k;
+    ORDER.forEach(function (t) { for (var i = 0; i < mm[t]; i++) s += c === 'w' ? OUTL[t] : SOLID[t]; });
+    return s;
+  }
+  function setStatus(id, msg, cls) { var el = $(id); el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
+
+  // ---------- pestañas ----------
+  var tabs = ['config', 'setup', 'play', 'saved'];
+  function showTab(name) {
+    tabs.forEach(function (t) {
+      $('t-' + t).setAttribute('aria-selected', t === name ? 'true' : 'false');
+      $('t-' + t).tabIndex = t === name ? 0 : -1;
+      $('p-' + t).hidden = t !== name;
+    });
+    if (name === 'saved') renderSaved();
+  }
+  tabs.forEach(function (t, i) {
+    $('t-' + t).addEventListener('click', function () { showTab(t); });
+    $('t-' + t).addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      var n = tabs[(i + d + tabs.length) % tabs.length]; showTab(n); $('t-' + n).focus();
+    });
+  });
+
+  // ---------- configuración ----------
+  PRESETS.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; $('preset').appendChild(o); });
+  $('preset').addEventListener('change', function () {
+    var p = PRESETS.filter(function (x) { return x.id === this.value; }, this)[0];
+    S.preset = p.id;
+    if (p.id !== 'custom') {
+      S.material = { w: Object.assign(z(), p.w), b: Object.assign(z(), p.b) };
+      S.opp = !!p.opp;
+    }
+    renderConfig(); saveSettings();
+  });
+
+  function buildSteppers() {
+    ['w', 'b'].forEach(function (c) {
+      var box = $('side-' + c);
+      ORDER.forEach(function (t) {
+        var row = document.createElement('div'); row.className = 'step';
+        var g = c === 'w' ? OUTL[t] : SOLID[t];
+        row.innerHTML = '<span class="name"><span class="g" aria-hidden="true">' + g + '</span>' + NAME[t] + '</span>' +
+          '<span class="ctrl"><button aria-label="Quitar ' + NAME[t].toLowerCase() + ' ' + (c === 'w' ? 'blanca' : 'negra') + '" data-d="-1">−</button>' +
+          '<output id="cnt-' + c + t + '">0</output>' +
+          '<button aria-label="Agregar ' + NAME[t].toLowerCase() + ' ' + (c === 'w' ? 'blanca' : 'negra') + '" data-d="1">+</button></span>';
+        row.querySelectorAll('button').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var v = S.material[c][t] + (+b.dataset.d);
+            if (v < 0 || v > MAX[t]) return;
+            S.material[c][t] = v; S.preset = 'custom'; renderConfig(); saveSettings();
+          });
+        });
+        box.appendChild(row);
+      });
+    });
+  }
+  function segInit(id, key) {
+    $(id).querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () { S[key] = b.dataset.v; renderConfig(); saveSettings(); });
+    });
+  }
+  function segRender(id, val) {
+    $(id).querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === String(val) ? 'true' : 'false'); });
+  }
+  function renderConfig() {
+    $('preset').value = S.preset;
+    ['w', 'b'].forEach(function (c) {
+      ORDER.forEach(function (t) {
+        var out = $('cnt-' + c + t); out.textContent = S.material[c][t];
+        var btns = out.parentNode.querySelectorAll('button');
+        btns[0].disabled = S.material[c][t] <= 0; btns[1].disabled = S.material[c][t] >= MAX[t];
+      });
+    });
+    segRender('turnSeg', S.turn); segRender('rivalSeg', S.rival); segRender('colorSeg', S.color); segRender('lvlSeg', S.level);
+    $('optCheck').checked = S.noCheck; $('optCapt').checked = S.noCaptures; $('optBish').checked = S.opp;
+    $('cpuOpts').hidden = S.rival !== 'cpu';
+  }
+  $('optCheck').addEventListener('change', function () { S.noCheck = this.checked; saveSettings(); });
+  $('optCapt').addEventListener('change', function () { S.noCaptures = this.checked; saveSettings(); });
+  $('optBish').addEventListener('change', function () { S.opp = this.checked; saveSettings(); });
+
+  function generateNow() {
+    var total = 0;
+    ['w', 'b'].forEach(function (c) { ORDER.forEach(function (t) { total += S.material[c][t]; }); });
+    if (!total) { setStatus('genStatus', 'Agrega al menos una pieza además de los reyes.', 'err'); showTab('config'); return; }
+    var fen = Core.generate(S.material, { turn: S.turn, noCheck: S.noCheck, noCaptures: S.noCaptures, oppositeBishops: S.opp });
+    if (!fen) { setStatus('genStatus', 'No se encontró una posición con estas condiciones. Quita alguna restricción o reduce el material.', 'err'); return; }
+    setStatus('genStatus', '');
+    setPosition(fen, true);
+    showTab('setup');
+  }
+  $('genBtn').addEventListener('click', generateNow);
+  $('anotherBtn').addEventListener('click', generateNow);
+
+  $('fenBtn').addEventListener('click', function () {
+    var fen = $('fenIn').value.trim().replace(/\s+/g, ' ');
+    if (fen.split(' ').length === 4) fen += ' 0 1';
+    var err = Core.checkUserFen(fen);
+    if (err) { setStatus('genStatus', err, 'err'); return; }
+    setStatus('genStatus', 'Posición cargada.', 'ok');
+    setPosition(fen, true); showTab('setup');
+  });
+
+  // ---------- posición ----------
+  function setPosition(fen, fresh) {
+    G.startFen = fen; G.game = new Chess(); G.game.load(fen);
+    G.playing = false; G.selected = null; G.targets = []; G.thinking = false;
+    G.fresh = !!fresh;
+    G.checked = {};
+    var m = countMaterial(fen);
+    $('matline').innerHTML = '<span class="g" aria-hidden="true">' + glyphLine(m.w, 'w') + '</span> contra <span class="g" aria-hidden="true">' + glyphLine(m.b, 'b') + '</span><br>' + describe(fen);
+    renderBoard(); renderSetup(); renderPlay();
+    G.fresh = false;
+  }
+
+  // ---------- tablero ----------
+  function renderBoard() {
+    var board = $('board'); board.innerHTML = '';
+    board.classList.toggle('live', G.playing);
+    board.classList.toggle('fresh', G.fresh);
+    var g = G.game, pos = {};
+    if (g) Core.readBoard(g.fen()).forEach(function (p) { pos['abcdefgh'[p.f] + (p.r + 1)] = p; });
+    var hist = g ? g.history({ verbose: true }) : [];
+    var last = hist.length ? hist[hist.length - 1] : null;
+    var inCheck = g && g.in_check() ? g.turn() : null;
+    for (var i = 0; i < 64; i++) {
+      var row = Math.floor(i / 8), col = i % 8;
+      var r = G.flipped ? row : 7 - row, f = G.flipped ? 7 - col : col;
+      var name = 'abcdefgh'[f] + (r + 1);
+      var el = document.createElement('button');
+      el.className = 'sq' + ((f + r) % 2 === 0 ? ' dark' : '');
+      el.dataset.sq = name; el.type = 'button'; el.tabIndex = G.playing ? 0 : -1;
+      var p = pos[name], label = name;
+      if (last && (last.from === name || last.to === name)) el.classList.add('last');
+      if (G.selected === name) el.classList.add('sel');
+      if (p && p.t === 'k' && p.c === inCheck) el.classList.add('chk');
+      if (p) {
+        var pc = document.createElement('span'); pc.className = 'pc ' + p.c; pc.setAttribute('aria-hidden', 'true');
+        pc.innerHTML = glyphHTML(p.t, p.c); el.appendChild(pc);
+        label += ', ' + NAME[p.t].toLowerCase() + (p.c === 'w' ? (p.t === 'q' || p.t === 'r' ? ' blanca' : ' blanco') : (p.t === 'q' || p.t === 'r' ? ' negra' : ' negro'));
+      }
+      var tg = G.targets.filter(function (m) { return m.to === name; })[0];
+      if (tg) { var d = document.createElement('span'); d.className = p ? 'ring' : 'dot'; el.appendChild(d); }
+      if (col === 0) { var cr = document.createElement('span'); cr.className = 'coord rank'; cr.textContent = r + 1; el.appendChild(cr); }
+      if (row === 7) { var cf = document.createElement('span'); cf.className = 'coord file'; cf.textContent = 'abcdefgh'[f]; el.appendChild(cf); }
+      el.setAttribute('aria-label', label);
+      el.addEventListener('click', onSquare);
+      board.appendChild(el);
+    }
+    if (!g) { $('caption').textContent = 'Genera un final para comenzar'; return; }
+    var over = gameOverText();
+    $('caption').textContent = over || (g.turn() === 'w' ? 'Juegan las blancas' : 'Juegan las negras');
+  }
+
+  function onSquare(e) {
+    if (!G.playing || G.thinking || !G.game || G.game.game_over()) return;
+    var g = G.game, sqn = e.currentTarget.dataset.sq;
+    if (S.rival === 'cpu' && g.turn() !== G.human) return;
+    var tg = G.targets.filter(function (m) { return m.to === sqn; });
+    if (G.selected && tg.length) {
+      if (tg[0].flags.indexOf('p') >= 0) { askPromotion(tg[0]); return; }
+      doMove({ from: G.selected, to: sqn }); return;
+    }
+    var p = g.get(sqn);
+    if (p && p.color === g.turn()) {
+      G.selected = sqn; G.targets = g.moves({ square: sqn, verbose: true });
+    } else { G.selected = null; G.targets = []; }
+    renderBoard();
+    var again = document.querySelector('[data-sq="' + sqn + '"]'); if (again) again.focus();
+  }
+
+  function askPromotion(mv) {
+    var box = $('promoBtns'); box.innerHTML = '';
+    var c = G.game.turn();
+    ['q', 'r', 'b', 'n'].forEach(function (t) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = c === 'w' ? OUTL[t] : SOLID[t]; b.setAttribute('aria-label', NAME[t]);
+      b.addEventListener('click', function () { $('promo').hidden = true; doMove({ from: mv.from, to: mv.to, promotion: t }); });
+      box.appendChild(b);
+    });
+    $('promo').hidden = false; box.firstChild.focus();
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('promo').hidden) { $('promo').hidden = true; } });
+
+  function doMove(m) {
+    G.game.move(m); G.selected = null; G.targets = [];
+    renderBoard(); renderPlay();
+    maybeCpu();
+  }
+
+  function maybeCpu() {
+    var g = G.game;
+    if (!G.playing || S.rival !== 'cpu' || g.game_over() || g.turn() === G.human) return;
+    G.thinking = true; renderPlay();
+    setTimeout(function () {
+      var m = Core.bestMove(g.fen(), +S.level);
+      G.thinking = false;
+      if (m && G.playing) g.move(m);
+      renderBoard(); renderPlay();
+    }, 60);
+  }
+
+  function gameOverText() {
+    var g = G.game; if (!g) return '';
+    if (g.in_checkmate()) return 'Jaque mate. Ganan las ' + (g.turn() === 'w' ? 'negras' : 'blancas') + '.';
+    if (g.in_stalemate()) return 'Tablas por ahogado.';
+    if (g.insufficient_material()) return 'Tablas por material insuficiente.';
+    if (g.in_threefold_repetition()) return 'Tablas por triple repetición.';
+    if (g.in_draw()) return 'Tablas por la regla de las 50 jugadas.';
+    return '';
+  }
+
+  $('flipBtn').addEventListener('click', function () { G.flipped = !G.flipped; renderBoard(); });
+  $('copyBtn').addEventListener('click', function () {
+    if (!G.game) { setStatus('toolStatus', 'Primero genera o carga una posición.', 'err'); return; }
+    var fen = G.game.fen();
+    var done = function () { setStatus('toolStatus', 'FEN copiada al portapapeles.', 'ok'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(fen).then(done, function () { fallbackCopy(fen); done(); });
+    else { fallbackCopy(fen); done(); }
+  });
+  function fallbackCopy(t) { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) { } ta.remove(); }
+
+  // ---------- armar ----------
+  function renderSetup() {
+    var box = $('setupLists'); box.innerHTML = '';
+    if (!G.startFen) { box.innerHTML = '<p class="help">Todavía no hay una posición. Genera una en la pestaña Configurar.</p>'; $('progress').textContent = ''; return; }
+    var pcs = Core.readBoard(G.startFen);
+    var rank = { k: 0, q: 1, r: 2, b: 3, n: 4, p: 5 };
+    var total = pcs.length;
+    ['w', 'b'].forEach(function (c) {
+      var list = pcs.filter(function (p) { return p.c === c; }).sort(function (a, b) { return rank[a.t] - rank[b.t] || a.f - b.f || a.r - b.r; });
+      var h = document.createElement('h3'); h.textContent = c === 'w' ? 'Blancas' : 'Negras'; box.appendChild(h);
+      var ul = document.createElement('ul'); ul.className = 'plist';
+      list.forEach(function (p) {
+        var name = 'abcdefgh'[p.f] + (p.r + 1), key = c + name;
+        var li = document.createElement('li'); if (G.checked[key]) li.className = 'done';
+        li.innerHTML = '<label><input type="checkbox"' + (G.checked[key] ? ' checked' : '') + '><span class="g" aria-hidden="true">' + (c === 'w' ? OUTL[p.t] : SOLID[p.t]) + '</span>' + NAME[p.t] + '<span class="sqn">' + name + '</span></label>';
+        li.querySelector('input').addEventListener('change', function () { G.checked[key] = this.checked; li.className = this.checked ? 'done' : ''; progress(); });
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    });
+    function progress() {
+      var n = Object.keys(G.checked).filter(function (k) { return G.checked[k]; }).length;
+      $('progress').textContent = n === total ? 'Todas las piezas colocadas. ' + (G.game.turn() === 'w' ? 'Mueven las blancas.' : 'Mueven las negras.') : n + ' de ' + total + ' piezas colocadas';
+    }
+    progress();
+  }
+  $('toPlayBtn').addEventListener('click', function () { showTab('play'); });
+
+  // ---------- jugar ----------
+  segInit('turnSeg', 'turn'); segInit('rivalSeg', 'rival'); segInit('colorSeg', 'color'); segInit('lvlSeg', 'level');
+
+  $('startBtn').addEventListener('click', function () {
+    if (!G.startFen) { $('gameStatus').textContent = 'Primero genera o carga una posición.'; return; }
+    G.game = new Chess(); G.game.load(G.startFen);
+    G.playing = true; G.selected = null; G.targets = [];
+    G.human = S.color === 'turn' ? G.game.turn() : S.color;
+    if (S.rival === 'cpu') G.flipped = G.human === 'b';
+    renderBoard(); renderPlay(); maybeCpu();
+    var first = document.querySelector('.board .sq'); if (first && S.rival !== 'cpu') first.focus();
+  });
+  $('undoBtn').addEventListener('click', function () {
+    if (!G.playing || G.thinking) return;
+    var g = G.game;
+    g.undo();
+    if (S.rival === 'cpu' && g.turn() !== G.human) g.undo();
+    G.selected = null; G.targets = []; renderBoard(); renderPlay();
+  });
+  $('resetBtn').addEventListener('click', function () {
+    if (!G.startFen) return;
+    G.game = new Chess(); G.game.load(G.startFen); G.playing = false; G.selected = null; G.targets = [];
+    renderBoard(); renderPlay();
+  });
+
+  function renderPlay() {
+    var g = G.game, st = $('gameStatus'), mv = $('moves');
+    $('undoBtn').disabled = !G.playing || !g || !g.history().length;
+    $('resetBtn').disabled = !G.startFen;
+    if (!g) { st.textContent = ''; mv.innerHTML = '<p class="empty">Las jugadas aparecerán aquí.</p>'; return; }
+    var over = gameOverText();
+    if (!G.playing) st.textContent = 'Pulsa «Empezar partida» para jugar en pantalla.';
+    else if (over) st.textContent = over;
+    else if (G.thinking) st.textContent = 'La computadora está pensando…';
+    else if (S.rival === 'cpu') st.textContent = g.turn() === G.human ? 'Tu turno.' + (g.in_check() ? ' Estás en jaque.' : '') : 'Turno de la computadora.';
+    else st.textContent = (g.turn() === 'w' ? 'Juegan las blancas.' : 'Juegan las negras.') + (g.in_check() ? ' Jaque.' : '');
+    var h = g.history();
+    if (!h.length) { mv.innerHTML = '<p class="empty">Las jugadas aparecerán aquí.</p>'; return; }
+    var startBlack = G.startFen.split(' ')[1] === 'b', items = [], i = 0, n = 1;
+    if (startBlack) { items.push('<li value="1">…&nbsp;' + esSan(h[0]) + '</li>'); i = 1; n = 2; }
+    for (; i < h.length; i += 2, n++) items.push('<li value="' + n + '">' + esSan(h[i]) + (h[i + 1] ? '&nbsp;&nbsp;' + esSan(h[i + 1]) : '') + '</li>');
+    mv.innerHTML = '<ol>' + items.join('') + '</ol>';
+    mv.scrollTop = mv.scrollHeight;
+  }
+
+  // ---------- guardados ----------
+  $('saveBtn').addEventListener('click', function () {
+    if (!G.startFen) { setStatus('toolStatus', 'Primero genera o carga una posición.', 'err'); return; }
+    var list = load('finales.saved', []);
+    if (list.some(function (x) { return x.fen === G.startFen; })) { setStatus('toolStatus', 'Esta posición ya está guardada.', 'ok'); return; }
+    var d = new Date();
+    list.unshift({ fen: G.startFen, name: describe(G.startFen), date: d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() });
+    store('finales.saved', list.slice(0, 60));
+    setStatus('toolStatus', 'Posición guardada. La encontrarás en la pestaña Guardados.', 'ok');
+  });
+  function renderSaved() {
+    var list = load('finales.saved', []), ul = $('savedList'); ul.innerHTML = '';
+    if (!list.length) { ul.innerHTML = '<li><span class="help" style="margin:0">Aún no hay posiciones guardadas.</span></li>'; return; }
+    list.forEach(function (it, idx) {
+      var li = document.createElement('li');
+      li.innerHTML = '<div class="meta"><strong></strong><small></small></div>';
+      li.querySelector('strong').textContent = it.name + ' (' + it.date + ')';
+      li.querySelector('small').textContent = it.fen;
+      var a = document.createElement('button'); a.className = 'btn'; a.textContent = 'Cargar';
+      a.addEventListener('click', function () { setPosition(it.fen, true); showTab('setup'); });
+      var del = document.createElement('button'); del.className = 'btn'; del.textContent = 'Eliminar';
+      del.addEventListener('click', function () { var l = load('finales.saved', []); l.splice(idx, 1); store('finales.saved', l); renderSaved(); });
+      li.appendChild(a); li.appendChild(del); ul.appendChild(li);
+    });
+  }
+
+  // ---------- inicio ----------
+  if (typeof Chess === 'undefined') {
+    document.querySelector('main').innerHTML = '<p class="status err">No se pudo cargar la biblioteca de ajedrez. Revisa tu conexión y recarga la página.</p>';
+    return;
+  }
+  buildSteppers(); renderConfig(); renderBoard(); renderSetup(); renderPlay();
+})();
+</script>
+</body></html>
