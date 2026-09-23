@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Evita que buscadores indexen la página (contiene datos personales). -->
+<meta name="robots" content="noindex, nofollow">
+<title>Verificación de certificados – Capacitación: Ingreso seguro, consignación y operación en subestaciones transformadoras de MT/AT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tinta:#1b1f24;
+    --gris:#5b6470;
+    --linea:#d9dde2;
+    --fondo:#ffffff;
+    --banda:#f4f6f8;
+    --seguridad:#f2b705;   /* amarillo de seguridad */
+    --ok:#1f7a3f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fondo);color:var(--tinta)}
+  body{
+    font-family:"IBM Plex Sans", Arial, Helvetica, sans-serif;
+    font-size:16px;line-height:1.5;
+  }
+  .franja{
+    height:10px;
+    background:repeating-linear-gradient(-45deg,var(--seguridad) 0 14px,var(--tinta) 14px 28px);
+  }
+  main{max-width:920px;margin:0 auto;padding:40px 20px 56px}
+
+  header h1{
+    font-size:1.75rem;line-height:1.25;font-weight:700;margin:0 0 6px;max-width:34ch;
+  }
+  header p.sub{margin:0;color:var(--gris);font-size:1.05rem}
+
+  .datos{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:0;margin:28px 0 32px;border-top:2px solid var(--tinta);border-bottom:1px solid var(--linea);
+  }
+  .datos div{padding:12px 16px 12px 0}
+  .datos dt{font-size:.82rem;color:var(--gris)}
+  .datos dd{margin:0;font-weight:600}
+
+  .buscador label{display:block;font-weight:600;margin-bottom:6px}
+  .buscador p{margin:0 0 10px;color:var(--gris);font-size:.92rem}
+  .buscador input{
+    width:100%;font:inherit;padding:12px 14px;border:1.5px solid var(--gris);border-radius:4px;
+  }
+  .buscador input:focus{outline:3px solid var(--seguridad);outline-offset:1px;border-color:var(--tinta)}
+  #resultado{min-height:1.5em;margin:10px 0 18px;font-size:.95rem}
+  #resultado.ok{color:var(--ok);font-weight:600}
+  #resultado.sin{color:#9a2a1a;font-weight:600}
+
+  .tabla-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.97rem}
+  thead th{
+    text-align:left;font-weight:600;font-size:.85rem;color:var(--gris);
+    border-bottom:2px solid var(--tinta);padding:10px 12px;
+  }
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--linea);vertical-align:top}
+  tbody tr:nth-child(even){background:var(--banda)}
+  td.num{width:3.5em;color:var(--gris);font-variant-numeric:tabular-nums}
+  td.doc{font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.estado{white-space:nowrap;color:var(--ok);font-weight:600}
+  tr.oculto{display:none}
+  tr.destacado td{background:#fff6d6}
+
+  footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--linea);color:var(--gris);font-size:.88rem}
+  footer p{margin:0 0 8px;max-width:75ch}
+  footer a{color:var(--tinta)}
+
+  @media (max-width:560px){
+    header h1{font-size:1.4rem}
+    thead{display:none}
+    table,tbody,tr,td{display:block;width:100%}
+    tbody tr{padding:10px 0;border-bottom:1px solid var(--linea)}
+    tbody td{border:0;padding:2px 4px}
+    td.num{width:auto}
+    td.num::before{content:"N° "}
+    td.doc::before{content:"Documento: ";color:var(--gris);font-weight:400}
+  }
+  @media print{
+    .franja,.buscador,#resultado{display:none}
+    tr.oculto{display:table-row}
+    tbody tr:nth-child(even){background:none}
+  }
+</style>
+</head>
+<body>
+<div class="franja" aria-hidden="true"></div>
+<main>
+
+  <header>
+    <h1>Capacitación: Ingreso seguro, consignación y operación en subestaciones transformadoras de Media Tensión / Alta Tensión</h1>
+    <p class="sub">Listado oficial de participantes aprobados</p>
+  </header>
+
+  <dl class="datos">
+    <div><dt>Entidad emisora</dt><dd>Capacitación Industrial</dd></div>
+    <div><dt>Fecha de dictado</dt><dd>Agosto de 2026</dd></div>
+    <div><dt>Lugar</dt><dd>Bagley – Planta Villa Mercedes, San Luis</dd></div>
+    <div><dt>Carga horaria</dt><dd>4 horas (3 h teóricas + 1 h práctica)</dd></div>
+  </dl>
+
+  <section class="buscador">
+    <label for="q">Verificar un certificado</label>
+    <p>Ingrese el apellido, el DNI o el número de legajo que figura en el certificado.</p>
+    <input id="q" type="search" autocomplete="off" placeholder="Ej.: 24611996 o Arjona">
+    <div id="resultado" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="tabla-wrap">
+    <table>
+      <thead>
+        <tr><th scope="col">N°</th><th scope="col">Apellido y nombre</th><th scope="col">DNI / Legajo</th><th scope="col">Condición</th></tr>
+      </thead>
+      <tbody id="lista"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>Total de participantes aprobados: <strong id="total"></strong>.</p>
+    <p>Un certificado es auténtico únicamente si el nombre y el documento consignados en él coinciden con un registro de este listado. Ante cualquier discrepancia, comuníquese con la entidad emisora: <a href="mailto:info@capacind.com.ar">info@capacind.com.ar</a>.</p>
+  </footer>
+</main>
+
+<script>
+  // Tipo: "dni" o "legajo". Para editar el listado, modifique solo este arreglo.
+  const APROBADOS = [
+    ["Arjona Ariel Ernesto","dni","24611996"],
+    ["Bacchetta Hugo Daniel","dni","23947067"],
+    ["Barroso Jose Ignacio","legajo","571653"],
+    ["Cacace Emmanuel","legajo","586547"],
+    ["Cadamuro Juan Alberto","dni","27394562"],
+    ["Cardozo Francisco","legajo","815182"],
+    ["Cardozo Ther Yasna","dni","34859076"],
+    ["Carrizo Juan Nicolas","dni","21409416"],
+    ["Castillo Matias","dni","30571139"],
+    ["Ciancia Agustín Carlos","dni","29813004"],
+    ["Correa Claudio","dni","24242878"],
+    ["De Carlini Gerardo Miguel","dni","22786422"],
+    ["Escudero Tadeo","dni","29690026"],
+    ["Farias Silvio David","dni","31347130"],
+    ["Fercodini Javier","legajo","505922"],
+    ["Fernandez Juan","dni","28960528"],
+    ["Ferreyra Mauricio","dni","27393514"],
+    ["Godoy Luis","dni","23066015"],
+    ["Ibarra Andrés","dni","24719190"],
+    ["Lares Julio","dni","31532309"],
+    ["Lucero Carlos Dante","legajo","506930"],
+    ["Lucero Federico Alejandro","dni","40319154"],
+    ["Martinez Jorge Emanuel","dni","32979708"],
+    ["Meneghello Jorge","dni","24473762"],
+    ["Miranda Marcelo","dni","25354729"],
+    ["Mora Hector Osvaldo","dni","16661002"],
+    ["Ostellino Lautaro","dni","41807351"],
+    ["Pallero Miguel","dni","30478448"],
+    ["Pedernera Edgardo Javier","dni","29943082"],
+    ["Ponce Mauricio","legajo","814324"],
+    ["Puszkarky Pedro","dni","24931528"],
+    ["Rivero Ricardo Edgar","dni","17214287"],
+    ["Rivero Walter Fabricio","dni","34859269"],
+    ["Rodriguez Gustavo","dni","37090051"],
+    ["Romero Jorge Maximiliano","dni","40928007"],
+    ["Romero Ramón Eduardo","dni","26214900"],
+    ["Sosnowski Luis Emanuel","dni","29213212"],
+    ["Torres Raul Edgardo","dni","23637947"],
+    ["Vicens Ricardo","dni","18206150"],
+    ["Zárate Nicolás Exequiel","dni","39797532"]
+  ];
+
+  const normalizar = s => s.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[.\s-]/g,"");
+  const conPuntos = n => n.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+
+  const tbody = document.getElementById("lista");
+  const filas = APROBADOS.map(([nombre,tipo,nro],i) => {
+    const tr = document.createElement("tr");
+    const doc = tipo === "dni" ? conPuntos(nro) : "Legajo N° " + nro;
+    tr.innerHTML =
+      `<td class="num">${i+1}</td><td>${nombre}</td><td class="doc">${doc}</td><td class="estado">Aprobado</td>`;
+    tr.dataset.clave = normalizar(nombre + " " + nro);
+    tr.dataset.nro = nro;
+    tbody.appendChild(tr);
+    return tr;
+  });
+  document.getElementById("total").textContent = APROBADOS.length;
+
+  const q = document.getElementById("q");
+  const res = document.getElementById("resultado");
+  q.addEventListener("input", () => {
+    const t = normalizar(q.value);
+    let n = 0;
+    filas.forEach(tr => {
+      const coincide = !t || tr.dataset.clave.includes(t);
+      tr.classList.toggle("oculto", !coincide);
+      const exacto = t && /^\d+$/.test(t) && tr.dataset.nro === t;
+      tr.classList.toggle("destacado", !!exacto);
+      if (coincide) n++;
+    });
+    res.className = "";
+    if (!t) { res.textContent = ""; return; }
+    const exacta = filas.find(tr => tr.classList.contains("destacado"));
+    if (exacta) {
+      res.className = "ok";
+      res.textContent = "Documento verificado: figura en el listado de aprobados.";
+    } else if (n === 0) {
+      res.className = "sin";
+      res.textContent = "Sin coincidencias. Revise el dato ingresado o consulte a la entidad emisora.";
+    } else {
+      res.textContent = n + (n === 1 ? " coincidencia." : " coincidencias.");
+    }
+  });
+</script>
+</body>
+</html>
