@@ -1,1 +1,1 @@
-Sitio web de Capacitación Industrial www.capacind.com.ar
+Sitio web de Capacind - Capacitación Industrial www.capacind.com.ar
