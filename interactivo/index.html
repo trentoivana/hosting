@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Capacind Interactivo</title>
 <meta name="description" content="Participá de las actividades interactivas de Capacitación Industrial.">
-<meta name="theme-color" content="#14213d">
+<meta name="theme-color" content="#021527">
+<link rel="icon" href="img/logo-oscuro.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,9 +17,10 @@
 <div class="demo-banda" id="banda-demo" hidden>Modo demostración</div>
 
 <header class="cab">
-  <div class="marca"><span class="marca-logo">CI</span> Capacind Interactivo</div>
+  <img class="logo" src="img/logo-oscuro.png" alt="Capacitación Industrial">
   <span class="cab-nombre" id="cab-nombre"></span>
 </header>
+<div class="cab-titulo" id="cab-titulo" hidden></div>
 
 <main class="contenedor">
   <!-- Ingreso -->
@@ -71,6 +73,7 @@
   </section>
 </main>
 
+<canvas id="papelitos" aria-hidden="true"></canvas>
 <script type="module" src="js/participante.js"></script>
 </body>
 </html>

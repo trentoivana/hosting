@@ -1,5 +1,5 @@
 :root {
-  --tinta: #14213d;
+  --tinta: #021527;
   --tinta-2: #4a5468;
   --tinta-3: #7b8496;
   --fondo: #f3f4f7;
@@ -7,8 +7,9 @@
   --borde: #dfe2e8;
   --acento: #f2a900;
   --acento-tinta: #3b2a00;
-  --primario: #1d4ed8;
-  --primario-claro: #e7eefc;
+  --primario: #1b7075;
+  --primario-claro: #e2f0f0;
+  --marca-oscuro: #021527;
   --exito: #15803d;
   --exito-claro: #e5f5ea;
   --error: #b91c1c;
@@ -44,7 +45,7 @@ h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn-primario { background: var(--tinta); border-color: var(--tinta); color: #fff; }
-.btn-primario:hover { background: #22325a; border-color: #22325a; }
+.btn-primario:hover { background: #0b2a45; border-color: #0b2a45; }
 .btn-acento { background: var(--acento); border-color: var(--acento); color: var(--acento-tinta); }
 .btn-acento:hover { background: #e09d00; border-color: #e09d00; }
 .btn-peligro { color: var(--error); }
@@ -77,6 +78,8 @@ textarea.entrada { resize: vertical; min-height: 5em; }
   width: 32px; height: 32px; border-radius: 8px; background: var(--tinta); color: var(--acento);
   display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: .95rem;
 }
+.logo { display: block; height: 40px; width: auto; }
+.logo-sub { font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--tinta-3); }
 .demo-banda {
   background: var(--acento); color: var(--acento-tinta); text-align: center;
   font-size: .85rem; font-weight: 600; padding: .4em 1em;
@@ -113,3 +116,7 @@ textarea.entrada { resize: vertical; min-height: 5em; }
 .promedio strong { font-size: 3rem; font-variant-numeric: tabular-nums; }
 
 .vacio { text-align: center; color: var(--tinta-3); padding: 2rem 1rem; }
+
+#papelitos { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; display: none; }
+#papelitos.activo { display: block; }
+.icono-podio { width: 100%; height: 100%; display: block; }

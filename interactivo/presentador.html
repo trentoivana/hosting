@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Capacind Interactivo · Instructor</title>
+<link rel="icon" href="img/logo-oscuro.png">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,7 @@
 <!-- ================= Ingreso ================= -->
 <section id="p-ingreso" class="centrado" hidden>
   <div class="tarjeta ingreso">
-    <div class="marca"><span class="marca-logo">CI</span> Capacind Interactivo</div>
+    <img class="logo logo-ingreso" src="img/logo-claro.png" alt="Capacitación Industrial">
     <h1>Panel del instructor</h1>
     <p class="muted">Ingresá con tu cuenta de Google para administrar tus bancos de preguntas y conducir las actividades en vivo.</p>
     <button class="btn btn-primario btn-grande" id="btn-google">Ingresar con Google</button>
@@ -42,7 +43,7 @@
 <!-- ================= Panel ================= -->
 <section id="p-panel" hidden>
   <header class="barra-sup">
-    <div class="marca"><span class="marca-logo">CI</span> Capacind Interactivo</div>
+    <div class="marca"><img class="logo" src="img/logo-claro.png" alt="Capacitación Industrial"><span class="logo-sub">Interactivo</span></div>
     <div class="barra-sup-der">
       <span class="muted" id="nombre-usuario"></span>
       <button class="btn btn-chico btn-texto" id="btn-salir">Salir</button>
@@ -96,6 +97,10 @@
 <!-- ================= En vivo ================= -->
 <section id="p-vivo" hidden>
   <header class="vivo-cab">
+    <div class="vivo-marca">
+      <img class="logo logo-vivo" src="img/logo-oscuro.png" alt="Capacitación Industrial">
+      <span class="vivo-titulo" id="vivo-titulo"></span>
+    </div>
     <div class="vivo-ingreso">
       <span class="muted">Ingresá en</span> <strong id="vivo-url"></strong>
       <span class="muted">con el código</span> <strong class="codigo" id="vivo-codigo"></strong>
@@ -175,6 +180,7 @@
   <form method="dialog"><button class="btn">Cerrar</button></form>
 </dialog>
 
+<canvas id="papelitos" aria-hidden="true"></canvas>
 <script type="module" src="js/presentador.js"></script>
 </body>
 </html>

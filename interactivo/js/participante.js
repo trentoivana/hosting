@@ -1,5 +1,5 @@
 import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js";
-import { LETRAS, $, $$, esc, opcionesDe, mostrarAviso } from "./comun.js";
+import { LETRAS, $, $$, esc, opcionesDe, mostrarAviso, iconoPodio, lanzarPapelitos } from "./comun.js";
 
 const api = await conectar();
 const CLAVE = "capacind-participante";
@@ -16,6 +16,7 @@ let pidDibujado = null;
 let reloj = null;
 let seleccion = null;
 let enviando = false;
+let festejado = null;
 
 const mostrar = id => VISTAS.forEach(v => { $("#" + v).hidden = v !== id; });
 // En modo demostración cada pestaña es un participante distinto, por eso se recuerda por pestaña.
@@ -68,6 +69,7 @@ $("#form-ingreso").onsubmit = e => {
 
 $("#btn-otra-sala").onclick = () => {
   salir();
+  $("#cab-titulo").hidden = true;
   memoria.guardar(sesion ? { nombre: sesion.nombre } : null);
   history.replaceState(null, "", location.pathname);
   $("#in-codigo").value = "";
@@ -90,6 +92,9 @@ async function ingresar(codigo, nombre, automatico = false) {
       return mensaje("La actividad finalizó", "Esta sala ya no recibe participantes.");
     }
     await api.escribir(`participantes/${codigo}/${uid}`, { nombre, unido: MARCA_TIEMPO });
+    const titulo = await api.leer(`salas/${codigo}/titulo`).catch(() => null);
+    $("#cab-titulo").textContent = titulo || "";
+    $("#cab-titulo").hidden = !titulo;
     sesion = { codigo, nombre };
     memoria.guardar(sesion);
     $("#cab-nombre").textContent = nombre;
@@ -139,7 +144,7 @@ function mensaje(titulo, texto) {
 
 function resultado(icono, clase, titulo, texto, puntos) {
   const i = $("#res-icono");
-  i.textContent = icono;
+  if (icono.trim().startsWith("<svg")) i.innerHTML = icono; else i.textContent = icono;
   i.className = "icono-grande " + clase;
   $("#res-titulo").textContent = titulo;
   $("#res-texto").textContent = texto || "";
@@ -190,10 +195,14 @@ function render() {
     const pos = lista.findIndex(([u]) => u === api.uid());
     const titulo = e.fase === "fin" ? "¡Actividad finalizada!" : "Ranking parcial";
     if (pos < 0) {
-      return resultado(e.fase === "fin" ? "★" : "🏆", "trofeo", titulo, e.fase === "fin" ? "Gracias por participar." : "Mirá el ranking en la pantalla.");
+      return resultado("★", "estrella", titulo, e.fase === "fin" ? "Gracias por participar." : "Mirá el ranking en la pantalla.");
     }
     const mio = lista[pos][1];
-    return resultado(pos === 0 ? "🏆" : "★", "trofeo", titulo,
+    if (e.fase === "fin" && pos < 3 && festejado !== sesion.codigo) {
+      festejado = sesion.codigo;
+      setTimeout(() => lanzarPapelitos(5000), 400);
+    }
+    return resultado(pos < 3 ? iconoPodio(pos) : "★", pos < 3 ? "trofeo" : "estrella", titulo,
       `Estás en el puesto ${pos + 1} de ${lista.length}.${e.fase === "fin" ? " Gracias por participar." : ""}`,
       `<span class="muted">Tu puntaje</span><strong>${(mio.total || 0).toLocaleString("es-AR")}</strong>`);
   }

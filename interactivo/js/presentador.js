@@ -1,7 +1,7 @@
 import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js";
 import {
   TIPOS, LETRAS, $, $$, esc, idCorto, codigoSala, opcionesDe, esEvaluable,
-  puntaje, resumir, mostrarAviso
+  puntaje, resumir, mostrarAviso, iconoPodio, lanzarPapelitos
 } from "./comun.js";
 
 const api = await conectar();
@@ -319,6 +319,7 @@ async function entrarVivo(codigo, bancoId) {
   mostrar("p-vivo");
   $("#vivo-url").textContent = urlVisible();
   $("#vivo-codigo").textContent = formatoCodigo(codigo);
+  $("#vivo-titulo").textContent = vivo.titulo;
   const d = vivo.desuscribir;
   d.push(api.escuchar(`participantes/${codigo}`, v => { vivo.participantes = v || {}; actualizarParticipantes(); }));
   d.push(api.escuchar(`puntajes/${codigo}`, v => { vivo.puntajes = v || {}; if (["ranking", "fin"].includes(vivo.estado.fase)) render(true); }));
@@ -372,6 +373,7 @@ function render(forzar = false) {
   const e = vivo.estado;
   const clave = `${e.fase}:${e.pid || ""}`;
   if (clave === vivo.clave && !forzar) return actualizarResultados();
+  const esNueva = clave !== vivo.clave;
   vivo.clave = clave;
   const esc_ = $("#escenario");
 
@@ -394,13 +396,35 @@ function render(forzar = false) {
 
   if (e.fase === "ranking" || e.fase === "fin") {
     const filas = Object.values(vivo.puntajes).sort((a, b) => b.total - a.total).slice(0, 10);
+    const pts = f => f.total.toLocaleString("es-AR");
+    let cuerpo;
+    if (!filas.length) {
+      cuerpo = `<p class="vacio">Todavía no hay puntajes. El ranking se forma con las preguntas que tienen respuesta correcta.</p>`;
+    } else if (e.fase === "fin") {
+      // Podio: segundo, primero y tercero, en ese orden visual.
+      const podio = [1, 0, 2].filter(i => filas[i]).map(i => `
+        <div class="podio-col podio-${i + 1}" style="animation-delay:${[600, 1200, 0][i]}ms">
+          <div class="podio-icono">${iconoPodio(i)}</div>
+          <div class="podio-nombre">${esc(filas[i].nombre)}</div>
+          <div class="podio-puntos">${pts(filas[i])}</div>
+          <div class="podio-base">${i + 1}°</div>
+        </div>`).join("");
+      const resto = filas.slice(3).map((f, k) => `
+        <li style="animation-delay:${1600 + k * 80}ms"><span class="pos">${k + 4}°</span><span>${esc(f.nombre)}</span><strong>${pts(f)}</strong></li>`).join("");
+      cuerpo = `<div class="podio">${podio}</div>${resto ? `<ol class="resto">${resto}</ol>` : ""}`;
+    } else {
+      cuerpo = `<ol>${filas.map((f, i) => `
+        <li style="animation-delay:${(filas.length - i) * 80}ms">
+          <span class="pos">${i < 3 ? `<span class="pos-icono">${iconoPodio(i)}</span>` : `${i + 1}°`}</span>
+          <span>${esc(f.nombre)}</span><strong>${pts(f)}</strong>
+        </li>`).join("")}</ol>`;
+    }
     esc_.innerHTML = `
-      <div class="ranking">
+      <div class="ranking ${e.fase === "fin" ? "ranking-final" : ""}">
         <h1>${e.fase === "fin" ? "Resultados finales" : "Ranking parcial"}</h1>
-        ${filas.length ? `<ol>${filas.map((f, i) => `
-          <li style="animation-delay:${(filas.length - i) * 80}ms"><span class="pos">${i + 1}°</span><span>${esc(f.nombre)}</span><strong>${f.total.toLocaleString("es-AR")}</strong></li>`).join("")}</ol>`
-          : `<p class="vacio">Todavía no hay puntajes. El ranking se forma con las preguntas que tienen respuesta correcta.</p>`}
+        ${cuerpo}
       </div>`;
+    if (e.fase === "fin" && esNueva && filas.length) setTimeout(() => lanzarPapelitos(), 1300);
     return;
   }
 
