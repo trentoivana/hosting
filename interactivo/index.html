@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=4">
-<link rel="stylesheet" href="css/participante.css?v=4">
+<link rel="stylesheet" href="css/estilos.css?v=5">
+<link rel="stylesheet" href="css/participante.css?v=5">
 </head>
 <body>
 <div class="demo-banda" id="banda-demo" hidden>Modo demostración</div>
@@ -23,6 +23,14 @@
 <div class="cab-titulo" id="cab-titulo" hidden></div>
 
 <main class="contenedor">
+  <!-- Carga inicial (visible hasta que el programa toma el control) -->
+  <section id="v-cargando" class="vista centro">
+    <div class="pulso" aria-hidden="true"></div>
+    <h1 id="cargando-titulo">Cargando…</h1>
+    <p class="muted" id="cargando-texto">Conectando con la actividad.</p>
+    <button class="btn" id="btn-recargar" type="button" hidden onclick="location.reload()">Recargar la página</button>
+  </section>
+
   <!-- Ingreso -->
   <section id="v-ingreso" class="vista" hidden>
     <h1>Ingresá a la actividad</h1>
@@ -74,6 +82,29 @@
 </main>
 
 <canvas id="papelitos" aria-hidden="true"></canvas>
-<script type="module" src="js/participante.js?v=4"></script>
+<script>
+// Si el programa no logra iniciar, se informa en pantalla en lugar de dejarla vacía.
+(function () {
+  function falla(texto) {
+    var v = document.getElementById("v-cargando");
+    if (!v || v.hidden) return;
+    document.getElementById("cargando-titulo").textContent = "No se pudo cargar";
+    document.getElementById("cargando-texto").textContent = texto;
+    document.getElementById("btn-recargar").hidden = false;
+  }
+  window.addEventListener("error", function (e) {
+    var t = e.target;
+    if (t && t.tagName === "SCRIPT") return falla("No se pudo descargar un archivo de la aplicación. Verificá la conexión y recargá la página.");
+    if (e.message) falla("Error: " + e.message);
+  }, true);
+  window.addEventListener("unhandledrejection", function (e) {
+    falla("Error: " + ((e.reason && e.reason.message) || e.reason));
+  });
+  setTimeout(function () {
+    falla("La conexión está tardando demasiado. Verificá tu conexión a internet y recargá la página.");
+  }, 15000);
+})();
+</script>
+<script type="module" src="js/participante.js?v=5"></script>
 </body>
 </html>

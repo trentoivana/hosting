@@ -1,8 +1,8 @@
-import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js";
+import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js?v=5";
 import {
   TIPOS, LETRAS, $, $$, esc, idCorto, codigoSala, opcionesDe, esEvaluable,
   puntaje, resumir, mostrarAviso, iconoPodio, lanzarPapelitos
-} from "./comun.js";
+} from "./comun.js?v=5";
 
 const api = await conectar();
 const CLAVE_SALA = "capacind-sala-activa";

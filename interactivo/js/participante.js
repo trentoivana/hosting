@@ -1,9 +1,9 @@
-import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js";
-import { LETRAS, $, $$, esc, opcionesDe, mostrarAviso, iconoPodio, lanzarPapelitos } from "./comun.js";
+import { conectar, MODO_DEMO, MARCA_TIEMPO } from "./datos.js?v=5";
+import { LETRAS, $, $$, esc, opcionesDe, mostrarAviso, iconoPodio, lanzarPapelitos } from "./comun.js?v=5";
 
 const api = await conectar();
 const CLAVE = "capacind-participante";
-const VISTAS = ["v-ingreso", "v-espera", "v-pregunta", "v-resultado", "v-mensaje"];
+const VISTAS = ["v-cargando", "v-ingreso", "v-espera", "v-pregunta", "v-resultado", "v-mensaje"];
 
 let sesion = null;          // { codigo, nombre }
 let estado = null;

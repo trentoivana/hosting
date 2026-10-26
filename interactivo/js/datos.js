@@ -2,7 +2,7 @@
 // modo demostración (un "servidor" simulado en el navegador, compartido entre
 // pestañas mediante localStorage y BroadcastChannel).
 
-import { firebaseConfig } from "./config.js";
+import { firebaseConfig } from "./config.js?v=5";
 
 const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
 export const MODO_DEMO = !firebaseConfig.apiKey;
