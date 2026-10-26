@@ -1,0 +1,68 @@
+{
+  "rules": {
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+
+    "bancos": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && root.child('admins').child(auth.uid).val() === true"
+      }
+    },
+
+    "salas": {
+      "$sala": {
+        ".read": "auth != null",
+        ".write": "auth != null && $sala.matches(/^[0-9]{6}$/) && root.child('admins').child(auth.uid).val() === true && (!data.exists() || data.child('owner').val() === auth.uid)",
+        ".validate": "newData.child('owner').val() === auth.uid"
+      }
+    },
+
+    "participantes": {
+      "$sala": {
+        ".read": "auth != null && root.child('salas').child($sala).child('owner').val() === auth.uid",
+        ".write": "auth != null && root.child('salas').child($sala).child('owner').val() === auth.uid",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && root.child('salas').child($sala).exists() && root.child('salas').child($sala).child('estado/fase').val() !== 'fin'",
+          ".validate": "newData.hasChildren(['nombre', 'unido'])",
+          "nombre": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30" },
+          "unido": { ".validate": "newData.val() === now" },
+          "$otro": { ".validate": false }
+        }
+      }
+    },
+
+    "respuestas": {
+      "$sala": {
+        ".read": "auth != null && root.child('salas').child($sala).child('owner').val() === auth.uid",
+        ".write": "auth != null && root.child('salas').child($sala).child('owner').val() === auth.uid",
+        "$pid": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('salas').child($sala).child('estado/pid').val() === $pid && root.child('salas').child($sala).child('estado/fase').val() === 'pregunta'",
+            ".validate": "newData.hasChildren(['v', 't', 'n'])",
+            "v": {
+              ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() <= 5) || (newData.isString() && newData.val().length >= 1 && newData.val().length <= 200) || newData.hasChildren()",
+              "$i": { ".validate": "$i.matches(/^[0-2]$/) && newData.isString() && newData.val().length <= 25" }
+            },
+            "t": { ".validate": "newData.val() === now" },
+            "n": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "$otro": { ".validate": false }
+          }
+        }
+      }
+    },
+
+    "puntajes": {
+      "$sala": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('salas').child($sala).child('owner').val() === auth.uid"
+      }
+    }
+  }
+}
